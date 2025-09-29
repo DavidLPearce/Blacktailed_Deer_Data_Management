@@ -60,7 +60,7 @@ print(df_list)
 # The genetic data already has Lat and Long, don't need to add that in, 
 # and there is no other information that is needed `2024 Dixon Dog Samples` 
 
-# Extract Genetic, Geosepatial, and Assignment into individual df
+# Extract Genetic, and Assignment into individual df
 data_gen <- df_list$`2024 All Dixon Genotypes`
 data_assn <- df_list$`2024 DxD Deer Assignment`
 
