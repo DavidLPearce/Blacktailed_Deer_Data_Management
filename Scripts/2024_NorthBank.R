@@ -137,27 +137,50 @@ data_merge2 <- data_merge %>%
 # Take a look
 View(data_merge2)
 
+# ---------------------------------------
+# 
+#  All Together
+# 
+# ---------------------------------------
+
+# -----------------------
+# Reorganizing and Renaming
+# -----------------------
+
+
+data_merge3 <- data_merge2 %>%
+  left_join(
+    data_geo %>% select(`ODFW Sample #`, `Tray #`, Latitude, Longitude),
+    by =  "ODFW Sample #"
+  )
+
+# Take a look
+View(data_merge3)
+
+
 # -----------------------
 # Reorganizing and Renaming
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge2$WMU <- "NorthBank"
+data_merge3$WMU <- "NorthBank"
 
 # Add in a year column
-data_merge2$Year <- 2024
+data_merge3$Year <- 2024
 
 # Renaming column names for consistency across years. 
-names(data_merge2) <- gsub(" ", "_", names(data_merge2)) # spaces to underscores
-data_merge2 <- data_merge2 %>% # Manual changes
+names(data_merge3) <- gsub(" ", "_", names(data_merge3)) # spaces to underscores
+data_merge3 <- data_merge3 %>% # Manual changes
   rename(
     "ODFW_ID" = "ODFW_Sample_#",
     "OSU_ID" = "OSU_Label", 
     "Fawn" = "Fawn?",
     "Nloci" = "#_loci_typed_(original_7_markers)", 
-    "DAN" = "Deer_Assignment_Number"
+    "DAN" = "Deer_Assignment_Number",
+    "OSU_Tray" = "Tray_#"
+    
   )
-print(names(data_merge)) # Take a look
+print(names(data_merge3)) # Take a look
 
 
 
@@ -168,15 +191,15 @@ print(names(data_merge)) # Take a look
 # 
 # ---------------------------------------
 
-btd_data <- data_merge2[which(data_merge2$Species == "BTD"),]
-wtd_data <- data_merge2[which(data_merge2$Species == "CWTD"),]
+btd_data <- data_merge3[which(data_merge3$Species == "BTD"),]
+wtd_data <- data_merge3[which(data_merge3$Species == "CWTD"),]
 
 # -----------------------
 # Exporting
 # -----------------------
 
 # All deer data, even species unknown
-write.csv(data_merge2, file = "./Data/Cleaned/csv/2024NorthBankAllspp.csv")
+write.csv(data_merge3, file = "./Data/Cleaned/csv/2024NorthBankAllspp.csv")
 
 # Black-tailed deer
 saveRDS(btd_data, file = "./Data/Cleaned/rds/2024NorthBank.rds")
