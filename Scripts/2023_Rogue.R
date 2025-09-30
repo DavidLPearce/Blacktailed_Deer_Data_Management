@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Dixon WMU in 2023
+#       Data wrangling for Columbia black-tailed deer in the Rogue WMU in 2023
 #              
 #              
 #              
