@@ -65,8 +65,8 @@ data_gen <- df_list$`2024 All Dixon Genotypes`
 data_assn <- df_list$`2024 DxD Deer Assignment`
 
 # Inspect each df
-View(data_gen)
-View(data_assn)
+# View(data_gen)
+# View(data_assn)
 
 # -----------------------
 # Cleaning
@@ -114,14 +114,44 @@ data_merge$Year <- 2024
 
 # Renaming column names for consistency across years. 
 names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
+
+# Naming Scheme and columns to retain 
+# ODFW_ID
+# OSU_ID
+# All markers
+# Nloci
+# Sex
+# DAN
+# Latitude
+# Longitude
+# WMU
+# Year
+print(names(data_merge))
+
 data_merge <- data_merge %>% # Manual changes
   rename(
-    "Fawn" = "Fawn?",
     "Nloci" = "#_of_loci", 
     "Sex" = "sex",
     "DAN" = "Deer_Assignment_Number"
 )
 print(names(data_merge)) # Take a look
+
+data_merge <- data_merge %>% # Retain
+  select(
+    ODFW_ID, OSU_ID, 
+    Year, WMU, 
+    Latitude, Longitude,
+    Sex, DAN, Nloci,
+    `C273.1`, `C273.2`, 
+    `C89.1`, `C89.2`, 
+    `OdhE.1`, `OdhE.2`,
+    `SBTD05.1`, `SBTD05.2`, 
+    `SBTD06.1`, `SBTD06.2`, 
+    `T159s.1`, `T159s.2`,
+    `T7.1`, `T7.2`,    
+  )
+print(names(data_merge)) # Take a look
+View(data_merge)
 
 # -----------------------
 # Exporting

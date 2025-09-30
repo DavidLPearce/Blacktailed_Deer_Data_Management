@@ -68,9 +68,9 @@ data_geo <- df_list$`2024 North Bank Dog Samples`
 BTdata_assn <- df_list$`2024 NoB BTD Assignment`
 
 # Inspect each df
-View(data_gen)
-View(data_geo)
-View(BTdata_assn)
+# View(data_gen)
+# View(data_geo)
+# View(BTdata_assn)
 
 # -----------------------
 # Cleaning
@@ -147,10 +147,10 @@ View(data_merge2)
 # Reorganizing and Renaming
 # -----------------------
 
-
+# Add in coordinates
 data_merge3 <- data_merge2 %>%
   left_join(
-    data_geo %>% select(`ODFW Sample #`, `Tray #`, Latitude, Longitude),
+    data_geo %>% select(`ODFW Sample #`, Latitude, Longitude),
     by =  "ODFW Sample #"
   )
 
@@ -170,20 +170,45 @@ data_merge3$Year <- 2024
 
 # Renaming column names for consistency across years. 
 names(data_merge3) <- gsub(" ", "_", names(data_merge3)) # spaces to underscores
+
+# Naming Scheme and columns to retain 
+# ODFW_ID
+# OSU_ID
+# All markers
+# Nloci
+# Sex
+# DAN
+# Latitude
+# Longitude
+# WMU
+# Year
+print(names(data_merge))
+
 data_merge3 <- data_merge3 %>% # Manual changes
   rename(
     "ODFW_ID" = "ODFW_Sample_#",
     "OSU_ID" = "OSU_Label", 
-    "Fawn" = "Fawn?",
     "Nloci" = "#_loci_typed_(original_7_markers)", 
-    "DAN" = "Deer_Assignment_Number",
-    "OSU_Tray" = "Tray_#"
-    
+    "DAN" = "Deer_Assignment_Number"
   )
 print(names(data_merge3)) # Take a look
 
-
-
+data_merge3 <- data_merge3 %>% # Retain
+  select(
+    ODFW_ID, OSU_ID, 
+    Year, WMU, 
+    Latitude, Longitude, Species,
+    Sex, DAN, Nloci,
+    `C273.1`, `C273.2`, 
+    `C89.1`, `C89.2`, 
+    `OdhE.1`, `OdhE.2`,
+    `SBTD05.1`, `SBTD05.2`, 
+    `SBTD06.1`, `SBTD06.2`, 
+    `T159s.1`, `T159s.2`,
+    `T7.1`, `T7.2`,    
+  )
+print(names(data_merge3)) # Take a look
+View(data_merge3)
 
 # ---------------------------------------
 # 
@@ -194,19 +219,27 @@ print(names(data_merge3)) # Take a look
 btd_data <- data_merge3[which(data_merge3$Species == "BTD"),]
 wtd_data <- data_merge3[which(data_merge3$Species == "CWTD"),]
 
+# Remove species column
+btd_data <- btd_data %>%
+  select(-Species)
+
+wtd_data <- wtd_data %>%
+  select(-Species)
+
+# Check
+print(names(btd_data))
+print(names(wtd_data))
+
 # -----------------------
 # Exporting
 # -----------------------
-
-# All deer data, even species unknown
-write.csv(data_merge3, file = "./Data/Cleaned/csv/2024NorthBankAllspp.csv")
 
 # Black-tailed deer
 saveRDS(btd_data, file = "./Data/Cleaned/rds/2024NorthBank.rds")
 write.csv(btd_data, file = "./Data/Cleaned/csv/2024NorthBank.csv")
 
 # White-tailed deer
-saveRDS(wtd_data, file = "./Data/Cleaned/WTD/2024NorthBank_WTD.rds")
+write.csv(wtd_data, file = "./Data/Cleaned/WTD/2024NorthBank_WTD.csv")
 
 
 # ----------------------------- End of Script -----------------------------

@@ -143,10 +143,17 @@ print(names(data_merge)) # Take a look
 
 data_merge <- data_merge %>% # Retain
   select(
-    ODFW_ID, OSU_ID,
-    `C273.1`, `C273.2`, `C89.1`, `C89.2`, `OdhE.1`, `OdhE.2`,
-    `SBTD05.1`, `SBTD05.2`, `SBTD06.1`, `SBTD06.2`, `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`, Nloci, Sex, DAN, Latitude, Longitude, WMU, Year
+    ODFW_ID, OSU_ID, 
+    Year, WMU, 
+    Latitude, Longitude,
+    Sex, DAN, Nloci,
+    `C273.1`, `C273.2`, 
+    `C89.1`, `C89.2`, 
+    `OdhE.1`, `OdhE.2`,
+    `SBTD05.1`, `SBTD05.2`, 
+    `SBTD06.1`, `SBTD06.2`, 
+    `T159s.1`, `T159s.2`,
+    `T7.1`, `T7.2`,    
   )
 print(names(data_merge)) # Take a look
 View(data_merge)
