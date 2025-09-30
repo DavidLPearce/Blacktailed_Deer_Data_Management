@@ -93,6 +93,9 @@ missing_coords <- data_geo[is.na(data_geo$`UTM Easting (NAD 83)`) |
                              is.na(data_geo$`UTM Northing`), ]
 print(missing_coords)
 
+# check to see if sample amplified
+data_gen[data_gen$`ODFW Sample #` %in% missing_coords$`ODFW Sample #`, ]
+
 # sample did not amplify, so can safetly remove sample.
 data_geo <- data_geo[!is.na(data_geo$`UTM Easting (NAD 83)`) & 
                              !is.na(data_geo$`UTM Northing`), ]
