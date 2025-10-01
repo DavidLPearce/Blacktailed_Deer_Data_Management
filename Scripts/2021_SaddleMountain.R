@@ -145,3 +145,63 @@ data_merge <- data_gen %>%
 
 # Take a look
 View(data_merge)
+
+# -----------------------
+# Reorganizing and Renaming
+# -----------------------
+
+# Add in a column for WMU for later on when all years/WMUs are compiled together
+data_merge$WMU <- "SaddleMountain"
+
+# Add in a year column
+data_merge$Year <- 2021
+
+# Renaming column names for consistency across years. 
+# Naming Scheme and columns to retain 
+# ODFW_ID
+# OSU_ID
+# All markers
+# Nloci
+# Sex
+# DAN
+# Latitude
+# Longitude
+# WMU
+# Year
+print(names(data_merge))
+
+data_merge <- data_merge %>% # Manual changes
+  rename(
+    "ODFW_ID" = "ODFW Sample #",
+    "OSU_ID" = "OSU Label",
+    "Nloci" = "# loci typed (original 7 markers)", 
+    "DAN" = "Deer Assignment Number"
+  )
+print(names(data_merge)) # Take a look
+
+data_merge <- data_merge %>% # Retain
+  select(
+    ODFW_ID, OSU_ID, 
+    Year, WMU, 
+    Latitude, Longitude,
+    Sex, DAN, Nloci,
+    `C273.1`, `C273.2`, 
+    `C89.1`, `C89.2`, 
+    `OdhE.1`, `OdhE.2`,
+    `SBTD05.1`, `SBTD05.2`, 
+    `SBTD06.1`, `SBTD06.2`, 
+    `T159s.1`, `T159s.2`,
+    `T7.1`, `T7.2`,    
+  )
+print(names(data_merge)) # Take a look
+View(data_merge)
+
+
+# -----------------------
+# Exporting
+# -----------------------
+
+saveRDS(data_merge, file = "./Data/Cleaned/rds/2021SaddleMountain.rds")
+write.csv(data_merge, file = "./Data/Cleaned/csv/2021SaddleMountain.csv")
+
+# ----------------------------- End of Script -----------------------------
