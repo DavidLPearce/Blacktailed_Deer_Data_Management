@@ -107,14 +107,19 @@ head(data_geo)
 # Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
   left_join(
-    data_assn %>% select(`ODFW Sample #`, `Deer Assignment Number`),
-    by = c("ODFW Sample #" = "ODFW Sample #")
+    data_assn %>% select(`OSU Label`, `Deer Assignment Number`),
+    by = c("OSU Label" = "OSU Label")
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`ODFW Sample #`, Latitude, Longitude),
-    by = c("ODFW Sample #" = "ODFW Sample #")
-  )
+    data_geo %>% select(`OSU Label`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Label")
+  )%>%
+  # Ensuring Deer Assignment Number is numeric
+  mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
+  ) %>%
+  # Order by Deer Assignment Number
+  arrange(`Deer Assignment Number`) 
 
 # Take a look
 View(data_merge)
@@ -177,6 +182,5 @@ View(data_merge)
 # -----------------------
 
 saveRDS(data_merge, file = "./Data/Cleaned/rds/2022Wilson.rds")
-write.csv(data_merge, file = "./Data/Cleaned/csv/2022Wilson.csv")
 
 # ----------------------------- End of Script -----------------------------

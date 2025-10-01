@@ -233,7 +233,6 @@ print(names(wtd_data))
 
 # Black-tailed deer
 saveRDS(btd_data, file = "./Data/Cleaned/rds/2023NorthBank.rds")
-write.csv(btd_data, file = "./Data/Cleaned/csv/2023NorthBank.csv")
 
 # White-tailed deer
 write.csv(wtd_data, file = "./Data/Cleaned/WTD/2023NorthBank_WTD.csv")

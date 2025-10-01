@@ -93,11 +93,17 @@ print(data_assn)
 # -----------------------
 
 # Merging Deer Assignment Number from data_assn to data_gen but nothing else 
+# Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
-                      left_join(
-                        data_assn %>% select(`ODFW Sample #`, `Deer Assignment Number`),
-                        by = c("ODFW ID" = "ODFW Sample #")
-                      )
+  left_join(
+    data_assn %>% select(`OSU Label`, `Deer Assignment Number`),
+    by = c("OSU ID" = "OSU Label")
+  )%>%
+  # Ensuring Deer Assignment Number is numeric
+  mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
+  ) %>%
+  # Order by Deer Assignment Number
+  arrange(`Deer Assignment Number`) 
 
 # Take a look
 View(data_merge)
@@ -158,7 +164,5 @@ View(data_merge)
 # -----------------------
 
 saveRDS(data_merge, file = "./Data/Cleaned/rds/2024Dixon.rds")
-write.csv(data_merge, file = "./Data/Cleaned/csv/2024Dixon.csv")
-
 
 # ----------------------------- End of Script -----------------------------

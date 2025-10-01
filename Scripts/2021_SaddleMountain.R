@@ -61,9 +61,9 @@ data_gen <- df_list$`All 2021 SMD Genotypes`
 data_assn <- df_list$`2021 SMD Deer Assignment` 
 
 # Inspect each df
-View(data_geo)
-View(data_gen)
-View(data_assn)
+# View(data_geo)
+# View(data_gen)
+# View(data_assn)
 
 # -----------------------
 # Cleaning
@@ -81,38 +81,44 @@ names(data_gen) <- fix_alleles(names(data_gen))
 print(data_gen)
 
 # data_geo's headers are okay
+print(data_geo)
 
 # data_assn is not - repeat
 colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
 data_assn <- data_assn[-1, ]
 print(data_assn)
 
-# coords are in easting and northing changing to lat/long
-# First, ensuring coords are numeric
-# Note: column names may change run > names(data_geo)
+# Removing NAs from coords
+# First - sandardizing how NA could have been entered
+# Then converting to numeric
+# Lastly removing NAs
 data_geo <- data_geo %>%
   mutate(
-    `UTM Easting    (NAD 83)` = na_if(`UTM Easting    (NAD 83)`, "NA"),
-    `UTM Northing`         = na_if(`UTM Northing`, "NA")
+    # To character and trim whitespace
+    `UTM Easting    (NAD 83)` = as.character(`UTM Easting    (NAD 83)`) %>% trimws(),
+    `UTM Northing`            = as.character(`UTM Northing`) %>% trimws()
   ) %>%
   mutate(
+    # Standardize NA
+    `UTM Easting    (NAD 83)` = ifelse(`UTM Easting    (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting    (NAD 83)`),
+    `UTM Northing`            = ifelse(`UTM Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Northing`)
+  ) %>%
+  mutate(
+    # To numeric
     `UTM Easting    (NAD 83)` = as.numeric(`UTM Easting    (NAD 83)`),
-    `UTM Northing`         = as.numeric(`UTM Northing`)
+    `UTM Northing`            = as.numeric(`UTM Northing`)
+  ) %>%
+  # Remove NAs
+  filter(!is.na(`UTM Easting    (NAD 83)`), !is.na(`UTM Northing`))
+
+# If there is an error by as.numeric it is because there are other entries
+# for NA or missing data that the standardize pipe did not catch
+# Checking for any NAs
+data_geo %>%
+  summarise(
+    Easting_NAs  = sum(is.na(`UTM Easting    (NAD 83)`)),
+    Northing_NAs = sum(is.na(`UTM Northing`))
   )
-
-# Now checking to see if there are any missing coords
-missing_coords <- data_geo[is.na(data_geo$`UTM Easting    (NAD 83)`) | # check col names
-                             is.na(data_geo$`UTM Northing`), ]
-print(as.data.frame(missing_coords))
-
-# check to see if sample amplified
-as.data.frame(data_gen[data_gen$`ODFW Sample #` %in% missing_coords$`ODFW Sample #`,])
-
-# some samples did amplify, so not removing from data_gen,
-# will remove from data_geo to convert coords, but those
-# samples will have NA coords
-data_geo <- data_geo[!is.na(data_geo$`UTM Easting    (NAD 83)`) & 
-                       !is.na(data_geo$`UTM Northing`), ]
 
 # Now easting/northing to lat/long
 library(sf)
@@ -134,14 +140,20 @@ head(data_geo)
 # Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
   left_join(
-    data_assn %>% select(`ODFW Sample #`, `Deer Assignment Number`),
-    by = c("ODFW Sample #" = "ODFW Sample #")
+    data_assn %>% select(`OSU Label`, `Deer Assignment Number`),
+    by = c("OSU Label" = "OSU Label")
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`ODFW Sample #`, Latitude, Longitude),
-    by = c("ODFW Sample #" = "ODFW Sample #")
-  )
+    data_geo %>% select(`OSU Label`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Label")
+  )%>%
+  # Ensuring Deer Assignment Number is numeric
+  mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
+  ) %>%
+  # Order by Deer Assignment Number
+  arrange(`Deer Assignment Number`) 
+
 
 # Take a look
 View(data_merge)
@@ -202,6 +214,5 @@ View(data_merge)
 # -----------------------
 
 saveRDS(data_merge, file = "./Data/Cleaned/rds/2021SaddleMountain.rds")
-write.csv(data_merge, file = "./Data/Cleaned/csv/2021SaddleMountain.csv")
 
 # ----------------------------- End of Script -----------------------------
