@@ -111,8 +111,6 @@ as.data.frame(data_gen[data_gen$`ODFW Sample #` %in% missing_coords$`ODFW Sample
 # some samples did amplify, so not removing from data_gen,
 # will remove from data_geo to convert coords, but those
 # samples will have NA coords
-
-# sample did not amplify, so can safetly remove sample.
 data_geo <- data_geo[!is.na(data_geo$`UTM Easting (NAD 83)`) & 
                        !is.na(data_geo$`UTM Northing`), ]
 
