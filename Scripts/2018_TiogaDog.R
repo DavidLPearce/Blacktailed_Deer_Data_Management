@@ -1,7 +1,7 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2019
-#              Samples were collected by humans
+#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2018
+#              Samples were collected by humans and dog
 #              
 #              
 #                           
@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2019_Tioga_Human.xlsx"
+path <- "./Data/Raw/2018Tioga Dog.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -63,13 +63,14 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_geo <- df_list$`2019 Tioga Human Info.`
-data_gen <- df_list$`All 2019 Tioga Human Genotypes` 
-# No assignment numbers for this data set
+data_geo <- df_list$`Tioga Dog sample info`
+data_gen <- df_list$`All 2018 Tioga Dog Genotypes` 
+data_assn <- df_list$`2018 TiD Deer Assignment`
 
 # Inspect each df
 View(data_geo)
 View(data_gen)
+View(data_assn)
 
 # -----------------------
 # Cleaning
@@ -89,8 +90,13 @@ print(data_gen)
 # data_geo's headers are okay
 print(data_geo)
 
+# data_assn is not
+colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
+data_assn <- data_assn[-1, ]
+print(data_assn)
+
 # Removing NAs from coords
-# First - sandardizing how NA could have been entered
+# First sandardizing how NA could have been entered
 # Then converting to numeric
 # Lastly removing NAs
 names(data_geo) # Check column naming
@@ -98,35 +104,35 @@ names(data_geo) # Check column naming
 data_geo <- data_geo %>%
   mutate(
     # To character and trim whitespace
-    `UTM Easting (NAD 83)` = as.character(`UTM Easting (NAD 83)`) %>% trimws(),
+    `UTM Easting    (NAD 83)` = as.character(`UTM Easting    (NAD 83)`) %>% trimws(),
     `UTM Northing`            = as.character(`UTM Northing`) %>% trimws()
   ) %>%
   mutate(
     # Standardize NA
-    `UTM Easting (NAD 83)` = ifelse(`UTM Easting (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting (NAD 83)`),
+    `UTM Easting    (NAD 83)` = ifelse(`UTM Easting    (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting    (NAD 83)`),
     `UTM Northing`            = ifelse(`UTM Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Northing`)
   ) %>%
   mutate(
     # To numeric
-    `UTM Easting (NAD 83)` = as.numeric(`UTM Easting (NAD 83)`),
+    `UTM Easting    (NAD 83)` = as.numeric(`UTM Easting    (NAD 83)`),
     `UTM Northing`            = as.numeric(`UTM Northing`)
   ) %>%
   # Remove NAs
-  filter(!is.na(`UTM Easting (NAD 83)`), !is.na(`UTM Northing`))
+  filter(!is.na(`UTM Easting    (NAD 83)`), !is.na(`UTM Northing`))
 
 # If there is an error by as.numeric it is because there are other entries
 # for NA or missing data that the standardize pipe did not catch
 # Checking for any NAs
 data_geo %>%
   summarise(
-    Easting_NAs  = sum(is.na(`UTM Easting (NAD 83)`)),
+    Easting_NAs  = sum(is.na(`UTM Easting    (NAD 83)`)),
     Northing_NAs = sum(is.na(`UTM Northing`))
   )
 
 # Now easting/northing to lat/long
 coords_sf <- st_as_sf( #  convert to a sf object
   data_geo,
-  coords = c("UTM Easting (NAD 83)", "UTM Northing"),
+  coords = c("UTM Easting    (NAD 83)", "UTM Northing"),
   crs = 26910
 ) 
 coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
@@ -139,16 +145,58 @@ head(data_geo)
 # Merging Together
 # -----------------------
 
+# In case there is a sample with replicate OSU IDs 
+# In the data, this will determine how many times it appears
+# Should be zero
+data_gen %>% 
+  count(`OSU ID`) %>% 
+  filter(n > 1)
+
+# --- use this when needed, when above is >0
+# # Which rows have same OSU ID
+# data_gen %>% 
+#   filter(`OSU ID` == "ApD10800")%>% 
+#   print(width = Inf)
+ 
+# # Both rows of the same sample ID aplified for all loci
+# # this could just be a clerical error.
+# # Removing one of these rows.
+# data_gen <- data_gen %>%
+#   group_by(`OSU ID`) %>%
+#   filter(!(row_number() > 1 & `OSU ID` == "ApD10800")) %>%
+#   ungroup()
+
+# # Check for duplicates again
+# data_gen %>% 
+#   count(`OSU ID`) %>% 
+#   filter(n > 1)
+
+# # none :)
+
 # Merging Deer Assignment Number from data_assn to data_gen 
+names(data_gen)# Check column naming
+names(data_assn)
+names(data_geo) 
+
 data_merge <- data_gen %>%
+  left_join(
+    data_assn %>% select(`OSU ID`, `Deer Assignment Number`),
+    by = c("OSU ID" = "OSU ID")
+  )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
     data_geo %>% select(`OSU label`, Latitude, Longitude),
     by = c("OSU ID" = "OSU label")
-  )
+  )%>%
+  # Ensuring Deer Assignment Number is numeric
+  mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
+  ) %>%
+  # Order by Deer Assignment Number
+  arrange(`Deer Assignment Number`) 
 
 # Take a look
 View(data_merge)
+
 
 # -----------------------
 # Reorganizing and Renaming
@@ -158,7 +206,7 @@ View(data_merge)
 data_merge$WMU <- "Tioga"
 
 # Add in a year column
-data_merge$Year <- 2019
+data_merge$Year <- 2018
 
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
@@ -179,11 +227,9 @@ data_merge <- data_merge %>%
   rename(
     "ODFW_ID" = "ODFW Sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "# loci typed (original 7 markers)"
+    "Nloci" = "# loci typed (original 7 markers)", 
+    "DAN" = "Deer Assignment Number"
   )
-
-# Adding in Deer Assignment Number for later compiling
-data_merge$DAN <- NA
 
 # Retain
 data_merge <- data_merge %>% 
@@ -200,7 +246,6 @@ data_merge <- data_merge %>%
     `T159s.1`, `T159s.2`,
     `T7.1`, `T7.2`,    
   )
-
 # Take a look
 print(names(data_merge)) 
 View(data_merge)
@@ -209,6 +254,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/Cleaned/rds/2019TiogaHuman.rds")
+saveRDS(data_merge, file = "./Data/Cleaned/rds/2018TiogaDog.rds")
 
 # ----------------------------- End of Script -----------------------------

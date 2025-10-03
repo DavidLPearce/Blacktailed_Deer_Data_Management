@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2019
+#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2018
 #              Samples were collected by humans
 #              
 #              
@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2019_Tioga_Human.xlsx"
+path <- "./Data/Raw/2018 Tioga Human.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -63,13 +63,14 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_geo <- df_list$`2019 Tioga Human Info.`
-data_gen <- df_list$`All 2019 Tioga Human Genotypes` 
-# No assignment numbers for this data set
+data_geo <- df_list$`2018 Tioga Human Info.`
+data_gen <- df_list$`All 2018 Tioga Human Genotypes`
+# no assignment number, all were unique
 
 # Inspect each df
-View(data_geo)
-View(data_gen)
+# View(data_geo)
+# View(data_gen)
+
 
 # -----------------------
 # Cleaning
@@ -90,7 +91,7 @@ print(data_gen)
 print(data_geo)
 
 # Removing NAs from coords
-# First - sandardizing how NA could have been entered
+# First sandardizing how NA could have been entered
 # Then converting to numeric
 # Lastly removing NAs
 names(data_geo) # Check column naming
@@ -139,7 +140,39 @@ head(data_geo)
 # Merging Together
 # -----------------------
 
+# In case there is a sample with replicate OSU IDs 
+# In the data, this will determine how many times it appears
+# Should be zero
+data_gen %>% 
+  count(`OSU ID`) %>% 
+  filter(n > 1)
+
+# --- use this when needed, when above is >0
+# # Which rows have same OSU ID
+# data_gen %>% 
+#   filter(`OSU ID` == "ApD10800")%>% 
+#   print(width = Inf)
+ 
+# # Both rows of the same sample ID aplified for all loci
+# # this could just be a clerical error.
+# # Removing one of these rows.
+# data_gen <- data_gen %>%
+#   group_by(`OSU ID`) %>%
+#   filter(!(row_number() > 1 & `OSU ID` == "ApD10800")) %>%
+#   ungroup()
+
+# # Check for duplicates again
+# data_gen %>% 
+#   count(`OSU ID`) %>% 
+#   filter(n > 1)
+
+# # none :)
+
 # Merging Deer Assignment Number from data_assn to data_gen 
+names(data_gen)# Check column naming
+names(data_assn)
+names(data_geo) 
+
 data_merge <- data_gen %>%
   # Merge Latitude and Longitude from data_geo
   left_join(
@@ -150,6 +183,7 @@ data_merge <- data_gen %>%
 # Take a look
 View(data_merge)
 
+
 # -----------------------
 # Reorganizing and Renaming
 # -----------------------
@@ -158,7 +192,7 @@ View(data_merge)
 data_merge$WMU <- "Tioga"
 
 # Add in a year column
-data_merge$Year <- 2019
+data_merge$Year <- 2018
 
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
@@ -200,15 +234,14 @@ data_merge <- data_merge %>%
     `T159s.1`, `T159s.2`,
     `T7.1`, `T7.2`,    
   )
-
 # Take a look
 print(names(data_merge)) 
-View(data_merge)
+# View(data_merge)
 
 # -----------------------
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/Cleaned/rds/2019TiogaHuman.rds")
+saveRDS(data_merge, file = "./Data/Cleaned/rds/2018TiogaHuman.rds")
 
 # ----------------------------- End of Script -----------------------------
