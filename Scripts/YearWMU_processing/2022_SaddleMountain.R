@@ -31,7 +31,7 @@ setwd(".")
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2022_Saddle_Mountain_Dog_3Nov23.xlsx"
+path <- "./Data/0_Raw/2022_Saddle_Mountain_Dog_3Nov23.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)

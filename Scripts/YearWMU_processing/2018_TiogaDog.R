@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Applegate WMU in 2019
+#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2018
 #              Samples were collected by humans and dog
 #              
 #              
@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2019_Applegate_Dog.xlsx"
+path <- "./Data/0_Raw/2018Tioga Dog.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -63,9 +63,9 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_geo <- df_list$`ApD sample info`
-data_gen <- df_list$`All 2019 ApD Genotypes` 
-data_assn <- df_list$`2019 ApD Deer Assignment`
+data_geo <- df_list$`Tioga Dog sample info`
+data_gen <- df_list$`All 2018 Tioga Dog Genotypes` 
+data_assn <- df_list$`2018 TiD Deer Assignment`
 
 # Inspect each df
 View(data_geo)
@@ -90,13 +90,13 @@ print(data_gen)
 # data_geo's headers are okay
 print(data_geo)
 
-# data_assn is not - repeat
+# data_assn is not
 colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
 data_assn <- data_assn[-1, ]
 print(data_assn)
 
 # Removing NAs from coords
-# First - sandardizing how NA could have been entered
+# First sandardizing how NA could have been entered
 # Then converting to numeric
 # Lastly removing NAs
 names(data_geo) # Check column naming
@@ -152,25 +152,26 @@ data_gen %>%
   count(`OSU ID`) %>% 
   filter(n > 1)
 
-# Which rows have same OSU ID
-data_gen %>% 
-  filter(`OSU ID` == "ApD10800")%>% 
-  print(width = Inf)
+# --- use this when needed, when above is >0
+# # Which rows have same OSU ID
+# data_gen %>% 
+#   filter(`OSU ID` == "ApD10800")%>% 
+#   print(width = Inf)
  
-# Both rows of the same sample ID aplified for all loci
-# this could just be a clerical error.
-# Removing one of these rows.
-data_gen <- data_gen %>%
-  group_by(`OSU ID`) %>%
-  filter(!(row_number() > 1 & `OSU ID` == "ApD10800")) %>%
-  ungroup()
+# # Both rows of the same sample ID aplified for all loci
+# # this could just be a clerical error.
+# # Removing one of these rows.
+# data_gen <- data_gen %>%
+#   group_by(`OSU ID`) %>%
+#   filter(!(row_number() > 1 & `OSU ID` == "ApD10800")) %>%
+#   ungroup()
 
-# Check for duplicates again
-data_gen %>% 
-  count(`OSU ID`) %>% 
-  filter(n > 1)
+# # Check for duplicates again
+# data_gen %>% 
+#   count(`OSU ID`) %>% 
+#   filter(n > 1)
 
-# none :)
+# # none :)
 
 # Merging Deer Assignment Number from data_assn to data_gen 
 names(data_gen)# Check column naming
@@ -202,10 +203,10 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Applegate"
+data_merge$WMU <- "Tioga"
 
 # Add in a year column
-data_merge$Year <- 2019
+data_merge$Year <- 2018
 
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
@@ -253,6 +254,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2019ApplegateDog.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2018TiogaDog.rds")
 
 # ----------------------------- End of Script -----------------------------

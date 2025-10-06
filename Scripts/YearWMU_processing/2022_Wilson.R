@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Dixon WMU in 2024
+#       Data wrangling for Columbia black-tailed deer in the Wilson WMU in 2022
 #              
 #              
 #              
@@ -31,7 +31,7 @@ setwd(".")
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2024-Dixon_BTD_14July25.xlsx"
+path <- "./Data/0_Raw/2022_Wilson_Dog_3Nov23.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -45,7 +45,6 @@ names(df_list) <- sheets
 # Take a look
 print(df_list)
 
-
 # ------------------------------------------------------------------------------
 #
 #                               Data Wrangling
@@ -56,17 +55,15 @@ print(df_list)
 # Separating
 # -----------------------
 
-# ---- Note ----
-# The genetic data already has Lat and Long, don't need to add that in, 
-# and there is no other information that is needed `2024 Dixon Dog Samples` 
-
 # Extract Genetic, and Assignment into individual df
-data_gen <- df_list$`2024 All Dixon Genotypes`
-data_assn <- df_list$`2024 DxD Deer Assignment`
+data_geo <- df_list$`2022 Wilson Dog Samples`
+data_gen <- df_list$`2022 All Wilson Genotypes`
+data_assn <- df_list$`2022 WiD Deer Assignment`
 
 # Inspect each df
-# View(data_gen)
-# View(data_assn)
+View(data_geo)
+View(data_gen)
+View(data_assn)
 
 # -----------------------
 # Cleaning
@@ -83,21 +80,40 @@ print(data_gen)
 names(data_gen) <- fix_alleles(names(data_gen))
 print(data_gen)
 
+# data_geo's headers are okay
+
 # data_assn is not - repeat
 colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
 data_assn <- data_assn[-1, ]
 print(data_assn)
 
+# coords are in easting and northing changing to lat/long
+library(sf)
+coords_sf <- st_as_sf( #  convert to a sf object
+  data_geo,
+  coords = c("UTM Easting (NAD 83)", "UTM Northing"),
+  crs = 26910
+) 
+coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
+coords_latlong <- st_coordinates(coords_latlong)
+colnames(coords_latlong) <- c("Longitude", "Latitude")
+data_geo <- cbind(data_geo, coords_latlong)
+head(data_geo)
+
 # -----------------------
 # Merging Together
 # -----------------------
 
-# Merging Deer Assignment Number from data_assn to data_gen but nothing else 
 # Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
   left_join(
     data_assn %>% select(`OSU Label`, `Deer Assignment Number`),
-    by = c("OSU ID" = "OSU Label")
+    by = c("OSU Label" = "OSU Label")
+  )%>%
+  # Merge Latitude and Longitude from data_geo
+  left_join(
+    data_geo %>% select(`OSU Label`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Label")
   )%>%
   # Ensuring Deer Assignment Number is numeric
   mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
@@ -113,10 +129,10 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Dixon"
+data_merge$WMU <- "Wilson"
 
 # Add in a year column
-data_merge$Year <- 2024
+data_merge$Year <- 2022
 
 # Renaming column names for consistency across years. 
 names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
@@ -136,11 +152,13 @@ print(names(data_merge))
 
 data_merge <- data_merge %>% # Manual changes
   rename(
-    "Nloci" = "#_of_loci", 
-    "Sex" = "sex",
+    "ODFW_ID" = "ODFW_Sample_#",
+    "OSU_ID" = "OSU_Label",
+    "Nloci" = "#_loci_typed_(original_7_markers)", 
     "DAN" = "Deer_Assignment_Number"
-)
+  )
 print(names(data_merge)) # Take a look
+
 
 data_merge <- data_merge %>% # Retain
   select(
@@ -163,6 +181,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2024Dixon.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2022Wilson.rds")
 
 # ----------------------------- End of Script -----------------------------

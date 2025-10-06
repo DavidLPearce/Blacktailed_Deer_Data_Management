@@ -1,7 +1,7 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2018
-#              Samples were collected by humans and dog
+#       Data wrangling for Columbia black-tailed deer in the Applegate WMU in 2017
+#              Samples were collected by humans and dogs
 #              
 #              
 #                           
@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2018Tioga Dog.xlsx"
+path <- "./Data/0_Raw/2017ApplegateDog.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -63,14 +63,14 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_geo <- df_list$`Tioga Dog sample info`
-data_gen <- df_list$`All 2018 Tioga Dog Genotypes` 
-data_assn <- df_list$`2018 TiD Deer Assignment`
+data_geo <- df_list$`Applegate Dog Sample info.`
+data_gen <- df_list$`All 2017 ApD Genotypes`
+data_assn <- df_list$`2017 ApD Deer Assignment`
 
 # Inspect each df
-View(data_geo)
-View(data_gen)
-View(data_assn)
+str(data_geo)
+str(data_gen) 
+str(data_assn)
 
 # -----------------------
 # Cleaning
@@ -104,35 +104,35 @@ names(data_geo) # Check column naming
 data_geo <- data_geo %>%
   mutate(
     # To character and trim whitespace
-    `UTM Easting    (NAD 83)` = as.character(`UTM Easting    (NAD 83)`) %>% trimws(),
+    `UTM Easting (NAD 83)` = as.character(`UTM Easting (NAD 83)`) %>% trimws(),
     `UTM Northing`            = as.character(`UTM Northing`) %>% trimws()
   ) %>%
   mutate(
     # Standardize NA
-    `UTM Easting    (NAD 83)` = ifelse(`UTM Easting    (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting    (NAD 83)`),
+    `UTM Easting (NAD 83)` = ifelse(`UTM Easting (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting (NAD 83)`),
     `UTM Northing`            = ifelse(`UTM Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Northing`)
   ) %>%
   mutate(
     # To numeric
-    `UTM Easting    (NAD 83)` = as.numeric(`UTM Easting    (NAD 83)`),
+    `UTM Easting (NAD 83)` = as.numeric(`UTM Easting (NAD 83)`),
     `UTM Northing`            = as.numeric(`UTM Northing`)
   ) %>%
   # Remove NAs
-  filter(!is.na(`UTM Easting    (NAD 83)`), !is.na(`UTM Northing`))
+  filter(!is.na(`UTM Easting (NAD 83)`), !is.na(`UTM Northing`))
 
 # If there is an error by as.numeric it is because there are other entries
 # for NA or missing data that the standardize pipe did not catch
 # Checking for any NAs
 data_geo %>%
   summarise(
-    Easting_NAs  = sum(is.na(`UTM Easting    (NAD 83)`)),
+    Easting_NAs  = sum(is.na(`UTM Easting (NAD 83)`)),
     Northing_NAs = sum(is.na(`UTM Northing`))
   )
 
 # Now easting/northing to lat/long
 coords_sf <- st_as_sf( #  convert to a sf object
   data_geo,
-  coords = c("UTM Easting    (NAD 83)", "UTM Northing"),
+  coords = c("UTM Easting (NAD 83)", "UTM Northing"),
   crs = 26910
 ) 
 coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
@@ -203,10 +203,10 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Tioga"
+data_merge$WMU <- "Applegate"
 
 # Add in a year column
-data_merge$Year <- 2018
+data_merge$Year <- 2017
 
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
@@ -227,7 +227,7 @@ data_merge <- data_merge %>%
   rename(
     "ODFW_ID" = "ODFW Sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "# loci typed (original 7 markers)", 
+    "Nloci" = "# of loci typed (original 7 markers)", 
     "DAN" = "Deer Assignment Number"
   )
 
@@ -248,12 +248,12 @@ data_merge <- data_merge %>%
   )
 # Take a look
 print(names(data_merge)) 
-View(data_merge)
+# View(data_merge)
 
 # -----------------------
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2018TiogaDog.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2017ApplegateDog.rds")
 
 # ----------------------------- End of Script -----------------------------

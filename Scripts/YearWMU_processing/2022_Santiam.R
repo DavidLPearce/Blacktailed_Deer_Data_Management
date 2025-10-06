@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Wilson WMU in 2022
+#       Data wrangling for Columbia black-tailed deer in the Santiam WMU in 2022
 #              
 #              
 #              
@@ -31,7 +31,7 @@ setwd(".")
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2022_Wilson_Dog_3Nov23.xlsx"
+path <- "./Data/0_Raw/2022_Santaim_Dog_3Nov23.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -56,9 +56,9 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_geo <- df_list$`2022 Wilson Dog Samples`
-data_gen <- df_list$`2022 All Wilson Genotypes`
-data_assn <- df_list$`2022 WiD Deer Assignment`
+data_geo <- df_list$`2022 Santiam Dog Samples`
+data_gen <- df_list$`All 2022 Santiam Genotypes`
+data_assn <- df_list$`2022 SaD Deer Assignment`
 
 # Inspect each df
 View(data_geo)
@@ -88,6 +88,17 @@ data_assn <- data_assn[-1, ]
 print(data_assn)
 
 # coords are in easting and northing changing to lat/long
+# but there are some rows that have missing coordinates
+missing_coords <- data_geo[is.na(data_geo$`UTM Easting (NAD 83)`) | 
+                             is.na(data_geo$`UTM Northing`), ]
+print(missing_coords)
+
+# check to see if sample amplified
+data_gen[data_gen$`ODFW Sample #` %in% missing_coords$`ODFW Sample #`, ]
+
+# sample did not amplify, so can safetly remove sample.
+data_geo <- data_geo[!is.na(data_geo$`UTM Easting (NAD 83)`) & 
+                             !is.na(data_geo$`UTM Northing`), ]
 library(sf)
 coords_sf <- st_as_sf( #  convert to a sf object
   data_geo,
@@ -104,6 +115,10 @@ head(data_geo)
 # Merging Together
 # -----------------------
 
+names(data_gen)
+names(data_geo)
+names(data_assn)
+
 # Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
   left_join(
@@ -112,8 +127,8 @@ data_merge <- data_gen %>%
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`OSU Label`, Latitude, Longitude),
-    by = c("OSU Label" = "OSU Label")
+    data_geo %>% select(`OSU Sample Number`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Sample Number")
   )%>%
   # Ensuring Deer Assignment Number is numeric
   mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
@@ -129,7 +144,7 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Wilson"
+data_merge$WMU <- "Santiam"
 
 # Add in a year column
 data_merge$Year <- 2022
@@ -181,6 +196,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2022Wilson.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2022Santiam.rds")
 
 # ----------------------------- End of Script -----------------------------

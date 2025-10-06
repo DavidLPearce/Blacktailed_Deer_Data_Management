@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Dixon WMU in 2023
+#       Data wrangling for Columbia black-tailed deer in the Saddle Mountain WMU in 2020
 #              
 #              
 #              
@@ -12,9 +12,14 @@
 #
 # ------------------------------------------------------------------------------
 
+# Clear things
+rm(list = ls(all.names = TRUE)) # environment
+gc() # memory
+
 # Load packages
 library(tidyverse)
 library(readxl)
+library(sf)
 
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
@@ -31,7 +36,7 @@ setwd(".")
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2023_Dixon_Dog_17June24.xlsx"
+path <- "./Data/0_Raw/2020_Saddle_Mountain_Dog.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -56,15 +61,14 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_gen <- df_list$`2023 All Dixon Genotypes`
-data_geo <- df_list$`2023 Dixon Dog Samples`
-data_assn <- df_list$`2023 DxD Deer Assignment`
+data_geo <- df_list$`SMD sample info`
+data_gen <- df_list$`All 2020 SMD Genotypes` 
+data_assn <- df_list$`2020 SMD Deer Assignment` 
 
 # Inspect each df
-# View(data_gen)
-# View(data_geo)
-# View(data_assn)
-
+View(data_geo)
+View(data_gen)
+View(data_assn)
 
 # -----------------------
 # Cleaning
@@ -82,11 +86,56 @@ names(data_gen) <- fix_alleles(names(data_gen))
 print(data_gen)
 
 # data_geo's headers are okay
+print(data_geo)
 
 # data_assn is not - repeat
 colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
 data_assn <- data_assn[-1, ]
 print(data_assn)
+
+# Removing NAs from coords
+# First - sandardizing how NA could have been entered
+# Then converting to numeric
+# Lastly removing NAs
+data_geo <- data_geo %>%
+  mutate(
+    # To character and trim whitespace
+    `UTM Easting    (NAD 83)` = as.character(`UTM Easting    (NAD 83)`) %>% trimws(),
+    `UTM Northing`            = as.character(`UTM Northing`) %>% trimws()
+  ) %>%
+  mutate(
+    # Standardize NA
+    `UTM Easting    (NAD 83)` = ifelse(`UTM Easting    (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting    (NAD 83)`),
+    `UTM Northing`            = ifelse(`UTM Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Northing`)
+  ) %>%
+  mutate(
+    # To numeric
+    `UTM Easting    (NAD 83)` = as.numeric(`UTM Easting    (NAD 83)`),
+    `UTM Northing`            = as.numeric(`UTM Northing`)
+  ) %>%
+  # Remove NAs
+  filter(!is.na(`UTM Easting    (NAD 83)`), !is.na(`UTM Northing`))
+
+# If there is an error by as.numeric it is because there are other entries
+# for NA or missing data that the standardize pipe did not catch
+# Checking for any NAs
+data_geo %>%
+  summarise(
+    Easting_NAs  = sum(is.na(`UTM Easting    (NAD 83)`)),
+    Northing_NAs = sum(is.na(`UTM Northing`))
+  )
+
+# Now easting/northing to lat/long
+coords_sf <- st_as_sf( #  convert to a sf object
+  data_geo,
+  coords = c("UTM Easting    (NAD 83)", "UTM Northing"),
+  crs = 26910
+) 
+coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
+coords_latlong <- st_coordinates(coords_latlong)
+colnames(coords_latlong) <- c("Longitude", "Latitude")
+data_geo <- cbind(data_geo, coords_latlong)
+head(data_geo)
 
 # -----------------------
 # Merging Together
@@ -100,8 +149,8 @@ data_merge <- data_gen %>%
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`OSU Sample Number`, Latitude, Longitude),
-    by = c("OSU Label" = "OSU Sample Number")
+    data_geo %>% select(`OSU Label`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Label")
   )%>%
   # Ensuring Deer Assignment Number is numeric
   mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
@@ -117,14 +166,12 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Dixon"
+data_merge$WMU <- "SaddleMountain"
 
 # Add in a year column
-data_merge$Year <- 2023
+data_merge$Year <- 2020
 
 # Renaming column names for consistency across years. 
-names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
-
 # Naming Scheme and columns to retain 
 # ODFW_ID
 # OSU_ID
@@ -137,16 +184,18 @@ names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
 # WMU
 # Year
 print(names(data_merge))
-data_merge <- data_merge %>% # Manual changes
-  rename(
-    "ODFW_ID" = "ODFW_Sample_#",
-    "OSU_ID" = "OSU_Label",
-    "Nloci" = "#_loci_typed_(original_7_markers)", 
-    "DAN" = "Deer_Assignment_Number"
-  )
-print(names(data_merge)) # Take a look
 
-data_merge <- data_merge %>% # Retain
+# Manual changes
+data_merge <- data_merge %>% 
+  rename(
+    "ODFW_ID" = "ODFW Sample #",
+    "OSU_ID" = "OSU Label",
+    "Nloci" = "# loci typed (original 7 markers)", 
+    "DAN" = "Deer Assignment Number"
+  )
+
+# Retain
+data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
     Year, WMU, 
@@ -160,13 +209,14 @@ data_merge <- data_merge %>% # Retain
     `T159s.1`, `T159s.2`,
     `T7.1`, `T7.2`,    
   )
-print(names(data_merge)) # Take a look
+# Take a look
+print(names(data_merge)) 
 View(data_merge)
 
 # -----------------------
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2023Dixon.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2020SaddleMountain.rds")
 
 # ----------------------------- End of Script -----------------------------

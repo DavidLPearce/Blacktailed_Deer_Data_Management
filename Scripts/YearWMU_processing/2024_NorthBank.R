@@ -1,10 +1,10 @@
 # Author: David L. Pearce
 # Description:
 #       Data wrangling for Columbia black-tailed and white-tailed deer 
-#       in the North Bank WMU in 2023
+#       in the North Bank WMU in 2024
 #              
 #              
-
+                      
 
 # ------------------------------------------------------------------------------
 #
@@ -31,7 +31,7 @@ setwd(".")
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2023-North_Bank_BTD_21July25.xlsx"
+path <- "./Data/0_Raw/2024-North_Bank_BTD_21July25.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -63,14 +63,18 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, Geospatial, and Assignment into individual df
-data_gen <- df_list$`2023 All North Bank Genotypes`
-data_geo <- df_list$`2023 North Bank Dog Samples`
-BTdata_assn <- df_list$`2023 NoB BTD Deer Assignment`
+data_gen <- df_list$`2024 All North Bank Genotypes`
+data_geo <- df_list$`2024 North Bank Dog Samples`
+BTdata_assn <- df_list$`2024 NoB BTD Assignment`
 
 # Inspect each df
 # View(data_gen)
 # View(data_geo)
 # View(BTdata_assn)
+
+# -----------------------
+# Cleaning
+# -----------------------
 
 # Columns were not named correctly due to notes above each sheet, column names
 # are actually row 1
@@ -111,7 +115,7 @@ View(data_merge)
 # ---------------------------------------
 
 # Extract white-tail assignment
-WTdata_assn <- df_list$`2023 NoB CWTD Deer Assignment`
+WTdata_assn <- df_list$`2024 NoB CWTD Assignment`
 View(WTdata_assn)
 
 # Fix header
@@ -153,6 +157,7 @@ data_merge3 <- data_merge2 %>%
 # Take a look
 View(data_merge3)
 
+
 # -----------------------
 # Reorganizing and Renaming
 # -----------------------
@@ -161,7 +166,7 @@ View(data_merge3)
 data_merge3$WMU <- "NorthBank"
 
 # Add in a year column
-data_merge3$Year <- 2023
+data_merge3$Year <- 2024
 
 # Renaming column names for consistency across years. 
 names(data_merge3) <- gsub(" ", "_", names(data_merge3)) # spaces to underscores
@@ -185,7 +190,6 @@ data_merge3 <- data_merge3 %>% # Manual changes
     "OSU_ID" = "OSU_Label", 
     "Nloci" = "#_loci_typed_(original_7_markers)", 
     "DAN" = "Deer_Assignment_Number"
-    
   )
 print(names(data_merge3)) # Take a look
 
@@ -205,7 +209,6 @@ data_merge3 <- data_merge3 %>% # Retain
   )
 print(names(data_merge3)) # Take a look
 View(data_merge3)
-
 
 # ---------------------------------------
 # 
@@ -232,10 +235,10 @@ print(names(wtd_data))
 # -----------------------
 
 # Black-tailed deer
-saveRDS(btd_data, file = "./Data/1_YearWMU_processed/rds/2023NorthBank.rds")
+saveRDS(btd_data, file = "./Data/1_YearWMU_processed/rds/2024NorthBank.rds")
 
 # White-tailed deer
-write.csv(wtd_data, file = "./Data/1_YearWMU_processed/WTD/2023NorthBank_WTD.csv")
+write.csv(wtd_data, file = "./Data/1_YearWMU_processed/WTD/2024NorthBank_WTD.csv")
 
 
 # ----------------------------- End of Script -----------------------------

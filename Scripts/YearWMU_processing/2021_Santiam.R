@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Rogue WMU in 2023
+#       Data wrangling for Columbia black-tailed deer in the Santiam WMU in 2021
 #              
 #              
 #              
@@ -31,7 +31,7 @@ setwd(".")
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2023-Rogue_Dog_17June24.xlsx"
+path <- "./Data/0_Raw/2021_Santiam_Dog.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -56,13 +56,13 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_gen <- df_list$`2023 All Rogue Genotypes`
-data_geo <- df_list$`2023 Rogue Dog Samples`
-data_assn <- df_list$`2023 RoD Deer Assignment`
+data_geo <- df_list$`Santiam Dog sample info`
+data_gen <- df_list$`All 2021 Santiam Dog Genotypes`
+data_assn <- df_list$`2021 SaD Deer Assignment`
 
 # Inspect each df
-View(data_gen)
 View(data_geo)
+View(data_gen)
 View(data_assn)
 
 # -----------------------
@@ -87,10 +87,51 @@ colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column na
 data_assn <- data_assn[-1, ]
 print(data_assn)
 
+# coords are in easting and northing changing to lat/long
+# First, ensuring coords are numeric
+# Note: column names may change run > names(data_geo)
+data_geo <- data_geo %>%
+  mutate(
+    `UTM Easting (NAD 83)` = na_if(`UTM Easting (NAD 83)`, "NA"),
+    `UTM Northing`         = na_if(`UTM Northing`, "NA")
+  ) %>%
+  mutate(
+    `UTM Easting (NAD 83)` = as.numeric(`UTM Easting (NAD 83)`),
+    `UTM Northing`         = as.numeric(`UTM Northing`)
+  )
+
+# Now checking to see if there are any missing coords
+missing_coords <- data_geo[is.na(data_geo$`UTM Easting (NAD 83)`) | # check col names
+                             is.na(data_geo$`UTM Northing`), ]
+print(missing_coords)
+
+# check to see if sample amplified
+as.data.frame(data_gen[data_gen$`ODFW Sample #` %in% missing_coords$`ODFW Sample #`,])
+
+# some samples did amplify, so not removing from data_gen,
+# will remove from data_geo to convert coords, but those
+# samples will have NA coords
+data_geo <- data_geo[!is.na(data_geo$`UTM Easting (NAD 83)`) & 
+                       !is.na(data_geo$`UTM Northing`), ]
+
+# Now easting/northing to lat/long
+library(sf)
+coords_sf <- st_as_sf( #  convert to a sf object
+  data_geo,
+  coords = c("UTM Easting (NAD 83)", "UTM Northing"),
+  crs = 26910
+) 
+coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
+coords_latlong <- st_coordinates(coords_latlong)
+colnames(coords_latlong) <- c("Longitude", "Latitude")
+data_geo <- cbind(data_geo, coords_latlong)
+head(data_geo)
+
 # -----------------------
 # Merging Together
 # -----------------------
 
+# Merging Deer Assignment Number from data_assn to data_gen 
 # Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
   left_join(
@@ -99,8 +140,8 @@ data_merge <- data_gen %>%
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`OSU Sample Number`, Latitude, Longitude),
-    by = c("OSU Label" = "OSU Sample Number")
+    data_geo %>% select(`OSU Label`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Label")
   )%>%
   # Ensuring Deer Assignment Number is numeric
   mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
@@ -116,14 +157,12 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Rogue"
+data_merge$WMU <- "Santiam"
 
 # Add in a year column
-data_merge$Year <- 2023
+data_merge$Year <- 2021
 
 # Renaming column names for consistency across years. 
-names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
-
 # Naming Scheme and columns to retain 
 # ODFW_ID
 # OSU_ID
@@ -136,12 +175,13 @@ names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
 # WMU
 # Year
 print(names(data_merge))
+
 data_merge <- data_merge %>% # Manual changes
   rename(
-    "ODFW_ID" = "ODFW_Sample_#",
-    "OSU_ID" = "OSU_Label",
-    "Nloci" = "#_loci_typed_(original_7_markers)", 
-    "DAN" = "Deer_Assignment_Number"
+    "ODFW_ID" = "ODFW Sample #",
+    "OSU_ID" = "OSU Label",
+    "Nloci" = "# loci typed (original 7 markers)", 
+    "DAN" = "Deer Assignment Number"
   )
 print(names(data_merge)) # Take a look
 
@@ -162,10 +202,11 @@ data_merge <- data_merge %>% # Retain
 print(names(data_merge)) # Take a look
 View(data_merge)
 
+
 # -----------------------
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2023Rogue.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2021Santiam.rds")
 
 # ----------------------------- End of Script -----------------------------

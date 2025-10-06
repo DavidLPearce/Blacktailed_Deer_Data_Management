@@ -1,7 +1,7 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Applegate WMU in 2017
-#              Samples were collected by humans and dogs
+#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2017
+#              Samples were collected by humans
 #              
 #              
 #                           
@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/Raw/2017ApplegateDog.xlsx"
+path <- "./Data/0_Raw/2017Tioga Human.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -63,13 +63,13 @@ print(df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-data_geo <- df_list$`Applegate Dog Sample info.`
-data_gen <- df_list$`All 2017 ApD Genotypes`
-data_assn <- df_list$`2017 ApD Deer Assignment`
+data_geo <- df_list$`2017 Tioga Human Info.`
+data_gen <- df_list$`All 2017 Tioga Human Genotypes`
+data_assn <- df_list$`2017 TiH Deer Assignment`
 
 # Inspect each df
 str(data_geo)
-str(data_gen) 
+str(data_gen) # No coords
 str(data_assn)
 
 # -----------------------
@@ -95,51 +95,52 @@ colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column na
 data_assn <- data_assn[-1, ]
 print(data_assn)
 
-# Removing NAs from coords
-# First sandardizing how NA could have been entered
-# Then converting to numeric
-# Lastly removing NAs
-names(data_geo) # Check column naming
+# ----- NO COORDS -----
+# # Removing NAs from coords
+# # First sandardizing how NA could have been entered
+# # Then converting to numeric
+# # Lastly removing NAs
+# names(data_geo) # Check column naming
 
-data_geo <- data_geo %>%
-  mutate(
-    # To character and trim whitespace
-    `UTM Easting (NAD 83)` = as.character(`UTM Easting (NAD 83)`) %>% trimws(),
-    `UTM Northing`            = as.character(`UTM Northing`) %>% trimws()
-  ) %>%
-  mutate(
-    # Standardize NA
-    `UTM Easting (NAD 83)` = ifelse(`UTM Easting (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting (NAD 83)`),
-    `UTM Northing`            = ifelse(`UTM Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Northing`)
-  ) %>%
-  mutate(
-    # To numeric
-    `UTM Easting (NAD 83)` = as.numeric(`UTM Easting (NAD 83)`),
-    `UTM Northing`            = as.numeric(`UTM Northing`)
-  ) %>%
-  # Remove NAs
-  filter(!is.na(`UTM Easting (NAD 83)`), !is.na(`UTM Northing`))
+# data_geo <- data_geo %>%
+#   mutate(
+#     # To character and trim whitespace
+#     `UTM Easting (NAD 83)` = as.character(`UTM Easting (NAD 83)`) %>% trimws(),
+#     `UTM Northing`            = as.character(`UTM Northing`) %>% trimws()
+#   ) %>%
+#   mutate(
+#     # Standardize NA
+#     `UTM Easting (NAD 83)` = ifelse(`UTM Easting (NAD 83)` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Easting (NAD 83)`),
+#     `UTM Northing`            = ifelse(`UTM Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `UTM Northing`)
+#   ) %>%
+#   mutate(
+#     # To numeric
+#     `UTM Easting (NAD 83)` = as.numeric(`UTM Easting (NAD 83)`),
+#     `UTM Northing`            = as.numeric(`UTM Northing`)
+#   ) %>%
+#   # Remove NAs
+#   filter(!is.na(`UTM Easting (NAD 83)`), !is.na(`UTM Northing`))
 
-# If there is an error by as.numeric it is because there are other entries
-# for NA or missing data that the standardize pipe did not catch
-# Checking for any NAs
-data_geo %>%
-  summarise(
-    Easting_NAs  = sum(is.na(`UTM Easting (NAD 83)`)),
-    Northing_NAs = sum(is.na(`UTM Northing`))
-  )
+# # If there is an error by as.numeric it is because there are other entries
+# # for NA or missing data that the standardize pipe did not catch
+# # Checking for any NAs
+# data_geo %>%
+#   summarise(
+#     Easting_NAs  = sum(is.na(`UTM Easting (NAD 83)`)),
+#     Northing_NAs = sum(is.na(`UTM Northing`))
+#   )
 
-# Now easting/northing to lat/long
-coords_sf <- st_as_sf( #  convert to a sf object
-  data_geo,
-  coords = c("UTM Easting (NAD 83)", "UTM Northing"),
-  crs = 26910
-) 
-coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
-coords_latlong <- st_coordinates(coords_latlong)
-colnames(coords_latlong) <- c("Longitude", "Latitude")
-data_geo <- cbind(data_geo, coords_latlong)
-head(data_geo)
+# # Now easting/northing to lat/long
+# coords_sf <- st_as_sf( #  convert to a sf object
+#   data_geo,
+#   coords = c("UTM Easting (NAD 83)", "UTM Northing"),
+#   crs = 26910
+# ) 
+# coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
+# coords_latlong <- st_coordinates(coords_latlong)
+# colnames(coords_latlong) <- c("Longitude", "Latitude")
+# data_geo <- cbind(data_geo, coords_latlong)
+# head(data_geo)
 
 # -----------------------
 # Merging Together
@@ -183,11 +184,11 @@ data_merge <- data_gen %>%
     data_assn %>% select(`OSU ID`, `Deer Assignment Number`),
     by = c("OSU ID" = "OSU ID")
   )%>%
-  # Merge Latitude and Longitude from data_geo
-  left_join(
-    data_geo %>% select(`OSU label`, Latitude, Longitude),
-    by = c("OSU ID" = "OSU label")
-  )%>%
+  # # Merge Latitude and Longitude from data_geo
+  # left_join(
+  #   data_geo %>% select(`OSU label`, Latitude, Longitude),
+  #   by = c("OSU ID" = "OSU label")
+  # )%>%
   # Ensuring Deer Assignment Number is numeric
   mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
   ) %>%
@@ -203,7 +204,7 @@ View(data_merge)
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge$WMU <- "Applegate"
+data_merge$WMU <- "Tioga"
 
 # Add in a year column
 data_merge$Year <- 2017
@@ -225,9 +226,9 @@ print(names(data_merge))
 # Manual changes
 data_merge <- data_merge %>% 
   rename(
-    "ODFW_ID" = "ODFW Sample #",
+    "ODFW_ID" = "OSU Sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "# of loci typed (original 7 markers)", 
+    "Nloci" = "# loci typed (original 7 markers)", 
     "DAN" = "Deer Assignment Number"
   )
 
@@ -236,7 +237,7 @@ data_merge <- data_merge %>%
   select(
     ODFW_ID, OSU_ID, 
     Year, WMU, 
-    Latitude, Longitude,
+    # Latitude, Longitude,
     Sex, DAN, Nloci,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
@@ -254,6 +255,6 @@ print(names(data_merge))
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2017ApplegateDog.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2017TiogaHuman.rds")
 
 # ----------------------------- End of Script -----------------------------
