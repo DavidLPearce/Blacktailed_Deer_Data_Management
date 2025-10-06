@@ -16,6 +16,9 @@
 library(tidyverse)
 library(readxl)
 
+# Set working directory
+setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_Management/R")
+
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
 
