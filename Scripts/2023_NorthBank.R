@@ -232,10 +232,10 @@ print(names(wtd_data))
 # -----------------------
 
 # Black-tailed deer
-saveRDS(btd_data, file = "./Data/Cleaned/rds/2023NorthBank.rds")
+saveRDS(btd_data, file = "./Data/1_YearWMU_processed/rds/2023NorthBank.rds")
 
 # White-tailed deer
-write.csv(wtd_data, file = "./Data/Cleaned/WTD/2023NorthBank_WTD.csv")
+write.csv(wtd_data, file = "./Data/1_YearWMU_processed/WTD/2023NorthBank_WTD.csv")
 
 
 # ----------------------------- End of Script -----------------------------

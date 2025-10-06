@@ -217,6 +217,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/Cleaned/rds/2020SaddleMountain.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2020SaddleMountain.rds")
 
 # ----------------------------- End of Script -----------------------------

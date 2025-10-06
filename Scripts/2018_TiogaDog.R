@@ -254,6 +254,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/Cleaned/rds/2018TiogaDog.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2018TiogaDog.rds")
 
 # ----------------------------- End of Script -----------------------------
