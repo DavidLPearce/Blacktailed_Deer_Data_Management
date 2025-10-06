@@ -22,7 +22,7 @@ library(readxl)
 library(sf)
 
 # Set working directory
-setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetic_Data_Management/R")
+setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_Management/R")
 
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
@@ -244,7 +244,7 @@ data_merge <- data_merge %>%
   )
 
 # Retain
-data_merge_13loci <- data_merge %>% 
+data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
     Year, WMU, 
@@ -265,24 +265,6 @@ data_merge_13loci <- data_merge %>%
     `V.1`, `V.2`
   )
 # Take a look
-print(names(data_merge_13loci)) 
-View(data_merge_13loci)
-
-# Retaining only original 7 loci
-data_merge <- data_merge %>% 
-  select(
-    ODFW_ID, OSU_ID, 
-    Year, WMU, 
-    Latitude, Longitude,
-    Sex, DAN, Nloci,
-    `C273.1`, `C273.2`, 
-    `C89.1`, `C89.2`, 
-    `OdhE.1`, `OdhE.2`,
-    `SBTD05.1`, `SBTD05.2`, 
-    `SBTD06.1`, `SBTD06.2`, 
-    `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`
-  )
 print(names(data_merge)) 
 View(data_merge)
 
@@ -291,6 +273,5 @@ View(data_merge)
 # -----------------------
 
 saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2016TiogaHuman.rds")
-saveRDS(data_merge_13loci, file = "./Data/1_YearWMU_processed/rds/2016TiogaHuman_13loci.rds")
 
 # ----------------------------- End of Script -----------------------------
