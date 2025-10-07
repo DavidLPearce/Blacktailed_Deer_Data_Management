@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Indigo WMU in 2013
+#       Data wrangling for Columbia black-tailed deer in the Trask WMU in 2013
 #              Samples were collected by humans
 #              
 #              
