@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/0_Raw/2015TraskDog2015_forODFW_17Feb25.xlsx"
+path <- "./Data/0_Raw/2015TraskDog2015_forODFW_corrected_18Feb25.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -113,7 +113,7 @@ head(data_gen)
 # data_geo's headers are okay
 head(data_geo)
 
-# --- Okay for this dataset ---
+# # ---- Not a issue with this dataset ----
 # data_assn headers
 # colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
 # data_assn <- data_assn[-1, ]

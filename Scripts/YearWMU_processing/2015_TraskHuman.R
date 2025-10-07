@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/0_Raw/2015TraskHuman2015_forODFW_17Feb25.xlsx"
+path <- "./Data/0_Raw/2015TraskHuman2015_forODFW_18Nov15.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -107,6 +107,7 @@ head(data_gen)
 
 # theres a empty column name in data_gen
 names(data_gen)[19] <- "Nloci2"
+head(data_gen)
 
 # data_geo's headers are okay
 head(data_geo)

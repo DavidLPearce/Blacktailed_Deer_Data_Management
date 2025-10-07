@@ -38,7 +38,7 @@ options(scipen = 9999)
 # ------------------------------------------------------------------------------
 
 # Path to Excel file
-path <- "./Data/0_Raw/2015IndigoHuman2015_forODFW_17Feb25.xlsx"
+path <- "./Data/0_Raw/2015IndigoHuman2015_forODFW_18Nov15.xlsx"
 
 # Each sheet in Excel File
 sheets <- excel_sheets(path)
@@ -106,9 +106,10 @@ names(data_gen)
 names(data_gen) <- fix_alleles(names(data_gen))
 head(data_gen)
 
-# theres a empty column name in data_gen
-names(data_gen)[18] <- "Nloci"
-head(data_gen)
+# # ---- Not a issue with this dataset ----
+# # theres a empty column name in data_gen
+# names(data_gen)[18] <- "Nloci"
+# head(data_gen)
 
 # data_geo's headers are okay
 head(data_geo)
@@ -267,7 +268,7 @@ data_merge <- data_merge %>%
   rename(
     "ODFW_ID" = "ODFW sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "Nloci", 
+    "Nloci" = "# loci", 
     "DAN" = "Deer Assignment"
   )
 
