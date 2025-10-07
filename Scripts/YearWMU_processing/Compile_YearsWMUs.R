@@ -50,7 +50,8 @@ cbtd_data <- data.frame(
                   ODFW_ID = character(), 
                   OSU_ID = character(), 
                   Year = numeric(), 
-                  WMU = character(), 
+                  WMU = character(),
+                  Collection_method = character(),
                   Latitude = numeric(), 
                   Longitude = numeric(),
                   Sex = character(), 
@@ -130,3 +131,5 @@ View(cbtd_data)
 # ----------------------------
 
 # Calculate Nloci for standardized markers
+
+# Sex from f, m, F, M to Female, Male
