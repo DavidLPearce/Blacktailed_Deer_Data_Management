@@ -132,7 +132,7 @@ data_gen$Marker_notes <- "Markers C89, SBTD05, SBTD06, T7 are from standardized 
 head(data_gen)
 
 # Since there is no geo data adding a not about that to genetic data frame
-data_gen$Geo_notes <- "No coords, but I think first two digits in sample ID is reference to a grid"
+data_gen$Geo_notes <- "No coords, but I think first two digits in ODFW ID is reference to a grid"
 
 
 # # ---- Not a issue with this dataset ----
