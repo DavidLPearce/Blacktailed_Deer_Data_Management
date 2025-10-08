@@ -1,6 +1,7 @@
 # Author: David L. Pearce
 # Description:
-#       Compiling data from 2012-2024 for Columbia black-tailed deer microsatellite genetic data
+#       Compiling data from 2012-2024 for Columbia black-tailed deer 
+#        microsatellite genetic data
 #              
 #              
 #                           
@@ -97,31 +98,31 @@ cbtd_data <- data.frame(
 )
 
 # Take a look
-View(cbtd_data)
+str(cbtd_data)
 
 
 # ----------------------------
 # Extracting data from files
 # ----------------------------
-# Initialize progress bar
-total_files <- length(files)
-pb <- txtProgressBar(min = 0, max = total_files, style = 3)
 
+# Loop
 for (i in seq_along(files)) {
   
-  # Extract path
-  file_path <- files[i]
-
-  # Read file
-  file_data <- readRDS(file_path)
-
-  # Combining with dataset
-  cbtd_data <- data.frame(rbind(cbtd_data, file_data))  
+    # Extract path
+    file_path <- files[i]
+    
+    # Read file
+    file_data <- readRDS(file_path)
+    
+    # Some files had varying formatting to what cbtd_data was specified as
+    # making everything as a character fixes this. Format after compiling
+    file_data <- mutate(file_data, across(everything(), as.character))
+    cbtd_data <- mutate(cbtd_data, across(everything(), as.character))
+    
+    # Combine 
+    cbtd_data <- dplyr::bind_rows(cbtd_data, file_data)
   
-  # Update progress bar
-  setTxtProgressBar(pb, i)
-  
-}# end loop
+}# End loop
 
 # Take a look
 View(cbtd_data)
@@ -130,6 +131,69 @@ View(cbtd_data)
 # Further Formatting
 # ----------------------------
 
-# Calculate Nloci for standardized markers
+# Check formatting 
+str(cbtd_data) # everything is a character
+
+# as numeric
+names(cbtd_data)
+num_cols <- c("Year", "C273.1", "C273.2", 
+              "C89.1", "C89.2", "OdhE.1", "OdhE.2", 
+              "SBTD05.1", "SBTD05.2", "SBTD06.1", "SBTD06.2",             
+              "T159s.1","T159s.2","T7.1", "T7.2", "SBTD04.1",               
+              "SBTD04.2", "SBTD07.1", "SBTD07.2", "B.1", "B.2",                 
+               "C.1","C.2", "H.1", "H.2","N.1", "N.2",                   
+              "R.1", "R.2", "V.1", "V.2" 
+)  
+
+# Checking for what is not numeric in numeric columns
+for (col in num_cols) {
+  non_numeric <- cbtd_data[[col]][!grepl("^-?[0-9.]+$", cbtd_data[[col]]) & 
+                                    !is.na(cbtd_data[[col]])]
+  if (length(non_numeric) > 0) {
+    cat("\nColumn:", col, "\n")
+    cat("Non-numeric values:", unique(non_numeric)[1:min(10, length(unique(non_numeric)))], "\n")
+  }
+}
+
+# NAs are from those columns, rows
+cbtd_data <- cbtd_data %>%
+  mutate(across(all_of(num_cols), as.numeric))
+
+# Recheck structure
+str(cbtd_data)
 
 # Sex from f, m, F, M to Female, Male
+cbtd_data <- cbtd_data %>%
+  mutate(Sex = case_when(
+    Sex %in% c("f", "F") ~ "Female",
+    Sex %in% c("m", "M") ~ "Male",
+    TRUE ~ Sex  # Keep any other values as-is
+  ))
+
+# Calculate Nmarkers for standardized markers
+marker_cols <- list(
+                c("C273.1", "C273.2"),
+                c("C89.1", "C89.2"),
+                c("OdhE.1", "OdhE.2"),
+                c("SBTD05.1", "SBTD05.2"),
+                c("SBTD06.1", "SBTD06.2"),
+                c("T159s.1", "T159s.2"),
+                c("T7.1", "T7.2")
+)
+cbtd_data <- cbtd_data %>%
+  rowwise() %>%
+  mutate(Nmarkers = sum(sapply(marker_cols, function(cols) {
+    # A marker amplified if either allele has a value > 0
+    any(c_across(all_of(cols)) > 0, na.rm = TRUE)
+  }))) %>%
+  ungroup()
+
+# Take a look
+View(cbtd_data)
+
+# -----------------------
+# Exporting
+# -----------------------
+
+saveRDS(cbtd_data, file = "./Data/2_For_Across_Year_Assignments/Compiled_YearWMU.rds")
+write.csv(cbtd_data, file = "./Data/2_For_Across_Year_Assignments/Compiled_YearWMU.csv")
