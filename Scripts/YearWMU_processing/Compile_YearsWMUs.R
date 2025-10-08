@@ -136,7 +136,8 @@ str(cbtd_data) # everything is a character
 
 # as numeric
 names(cbtd_data)
-num_cols <- c("Year", "C273.1", "C273.2", 
+num_cols <- c("Year", "Latitude", "Longitude",
+              "C273.1", "C273.2", 
               "C89.1", "C89.2", "OdhE.1", "OdhE.2", 
               "SBTD05.1", "SBTD05.2", "SBTD06.1", "SBTD06.2",             
               "T159s.1","T159s.2","T7.1", "T7.2", "SBTD04.1",               
@@ -183,13 +184,16 @@ marker_cols <- list(
 cbtd_data <- cbtd_data %>%
   rowwise() %>%
   mutate(Nmarkers = sum(sapply(marker_cols, function(cols) {
-    # A marker amplified if either allele has a value > 0
     any(c_across(all_of(cols)) > 0, na.rm = TRUE)
   }))) %>%
   ungroup()
 
 # Take a look
 View(cbtd_data)
+
+# Order by Year, WMU, DAN
+cbtd_data <- cbtd_data %>%
+  arrange(desc(Year), WMU, DAN)
 
 # -----------------------
 # Exporting
