@@ -171,6 +171,9 @@ data_merge3$WMU <- "NorthBank"
 # Add in a year column
 data_merge3$Year <- 2024
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge3$Collection_method <- "Dog"
+
 # Renaming column names for consistency across years. 
 names(data_merge3) <- gsub(" ", "_", names(data_merge3)) # spaces to underscores
 
@@ -191,7 +194,7 @@ data_merge3 <- data_merge3 %>% # Manual changes
   rename(
     "ODFW_ID" = "ODFW_Sample_#",
     "OSU_ID" = "OSU_Label", 
-    "Nloci" = "#_loci_typed_(original_7_markers)", 
+    "Nmarkers" = "#_loci_typed_(original_7_markers)", 
     "DAN" = "Deer_Assignment_Number"
   )
 print(names(data_merge3)) # Take a look
@@ -199,9 +202,9 @@ print(names(data_merge3)) # Take a look
 data_merge3 <- data_merge3 %>% # Retain
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
-    Latitude, Longitude, Species,
-    Sex, DAN, Nloci,
+    Year, WMU, Collection_method,
+    Latitude, Longitude,
+    Sex, DAN, Nmarkers, Species,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,

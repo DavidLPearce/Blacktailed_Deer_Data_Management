@@ -257,6 +257,9 @@ data_merge$WMU <- "Alsea"
 # Add in a year column
 data_merge$Year <- 2013
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Human"
+
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -275,7 +278,7 @@ print(names(data_merge))
 data_merge <- data_merge %>% 
   rename(
     "ODFW_ID" = "Sample Name",
-    "Nloci" = "#loci", 
+    "Nmarkers" = "#loci", 
     "DAN" = "Deer Assignment"
   )
 
@@ -290,9 +293,9 @@ data_merge$OSU_ID <- NA
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,
@@ -310,6 +313,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2014AlseaDog.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2013AlseaHuman.rds")
 
 # ----------------------------- End of Script -----------------------------

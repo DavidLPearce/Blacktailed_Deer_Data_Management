@@ -107,6 +107,10 @@ head(data_geo)
 # Merging Together
 # -----------------------
 
+names(data_gen)
+names(data_assn)
+names(data_geo)
+
 # Merging Deer Assignment Number from data_assn to data_gen 
 data_merge <- data_gen %>%
   left_join(
@@ -115,8 +119,8 @@ data_merge <- data_gen %>%
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`OSU Label`, Latitude, Longitude),
-    by = c("OSU Label" = "OSU Label")
+    data_geo %>% select(`OSU Sample Number`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Sample Number")
   )%>%
   # Ensuring Deer Assignment Number is numeric
   mutate(`Deer Assignment Number` = as.numeric(`Deer Assignment Number`)
@@ -137,6 +141,9 @@ data_merge$WMU <- "Wilson"
 # Add in a year column
 data_merge$Year <- 2022
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Dog"
+  
 # Renaming column names for consistency across years. 
 names(data_merge) <- gsub(" ", "_", names(data_merge)) # spaces to underscores
 
@@ -157,7 +164,7 @@ data_merge <- data_merge %>% # Manual changes
   rename(
     "ODFW_ID" = "ODFW_Sample_#",
     "OSU_ID" = "OSU_Label",
-    "Nloci" = "#_loci_typed_(original_7_markers)", 
+    "Nmarkers" = "#_loci_typed_(original_7_markers)", 
     "DAN" = "Deer_Assignment_Number"
   )
 print(names(data_merge)) # Take a look
@@ -166,9 +173,9 @@ print(names(data_merge)) # Take a look
 data_merge <- data_merge %>% # Retain
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,

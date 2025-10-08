@@ -133,9 +133,7 @@ head(data_geo)
 data_geo$`Sample Name` <- gsub("\\.", "", data_geo$`Sample Name`)
 head(data_geo)
 
-# # Coordinates are only for node or end of transect adding in node
-# and a note
-data_geo$Note <- "Coords are from node and not sample location"
+
 
 # Splitting coords into one column per coord (1 easting, 1 northing)
 # assuming the one not named node is where the sample was collected
@@ -144,6 +142,9 @@ data_geo$Easting <- as.numeric(sub(",.*", "", data_geo$`Node  UTM (E, N)`))
 data_geo$Northing <- as.numeric(sub(".*, ", "", data_geo$`Node  UTM (E, N)`))
 head(data_geo)
 
+# # Coordinates are only for node or end of transect adding in node
+# and a note
+data_geo$Geo_notes <- "Coords are from node and not location of sample "
 
 # Removing NAs from coords
 # First sandardizing how NA could have been entered
@@ -253,7 +254,7 @@ data_merge <- data_gen %>%
   )%>%
   # Merge Latitude and Longitude from data_geo
   left_join(
-    data_geo %>% select(`Sample Name`, Latitude, Longitude, Note),
+    data_geo %>% select(`Sample Name`, Latitude, Longitude, Geo_notes),
     by = c("Sample Name" = "Sample Name")
   )%>%
   # Ensuring Deer Assignment Number is numeric
@@ -277,6 +278,10 @@ data_merge$WMU <- "Indigo"
 
 # Add in a year column
 data_merge$Year <- 2013
+
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Human"
+
 
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
@@ -307,22 +312,22 @@ data_merge <- data_merge %>% rename(T159s.1 = T159S.1,
 data_merge$OSU_ID <- NA
 
 # Also no Nloci
-data_merge$Nloci <- NA
+data_merge$Nmarkers <- NA
 
 # Retain
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
-    Latitude, Longitude, Note,
-    Sex, DAN, Nloci,
+    Year, WMU, Collection_method,
+    Latitude, Longitude, 
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,
     `SBTD05.1`, `SBTD05.2`, 
     `SBTD06.1`, `SBTD06.2`, 
     `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`
+    `T7.1`, `T7.2`, Geo_notes
   )
 
 # Take a look

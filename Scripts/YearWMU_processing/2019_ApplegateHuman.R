@@ -21,11 +21,11 @@ library(tidyverse)
 library(readxl)
 library(sf)
 
+
 # Set working directory
 setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_Management/R")
 
-# Set working directory
-setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetic_Data_Management/R")
+
 
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
@@ -184,6 +184,9 @@ data_merge$WMU <- "Applegate"
 # Add in a year column
 data_merge$Year <- 2019
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Human"
+
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -203,7 +206,7 @@ data_merge <- data_merge %>%
   rename(
     "ODFW_ID" = "ODFW Sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "# of loci typed (original 7 markers)", 
+    "Nmarkers" = "# of loci typed (original 7 markers)", 
     "DAN" = "Deer Assignment Number"
   )
 
@@ -211,9 +214,9 @@ data_merge <- data_merge %>%
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,

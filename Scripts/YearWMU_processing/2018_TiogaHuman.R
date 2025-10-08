@@ -24,8 +24,6 @@ library(sf)
 # Set working directory
 setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_Management/R")
 
-# Set working directory
-setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetic_Data_Management/R")
 
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
@@ -173,7 +171,7 @@ data_gen %>%
 
 # Merging Deer Assignment Number from data_assn to data_gen 
 names(data_gen)# Check column naming
-names(data_assn)
+# names(data_assn)
 names(data_geo) 
 
 data_merge <- data_gen %>%
@@ -197,6 +195,9 @@ data_merge$WMU <- "Tioga"
 # Add in a year column
 data_merge$Year <- 2018
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Human"
+ 
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -216,7 +217,7 @@ data_merge <- data_merge %>%
   rename(
     "ODFW_ID" = "ODFW Sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "# loci typed (original 7 markers)"
+    "Nmarkers" = "# loci typed (original 7 markers)"
   )
 
 # Adding in Deer Assignment Number for later compiling
@@ -226,9 +227,9 @@ data_merge$DAN <- NA
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,
@@ -239,7 +240,7 @@ data_merge <- data_merge %>%
   )
 # Take a look
 print(names(data_merge)) 
-# View(data_merge)
+View(data_merge)
 
 # -----------------------
 # Exporting

@@ -107,7 +107,7 @@ names(data_gen) <- fix_alleles(names(data_gen))
 head(data_gen)
 
 # theres a empty column name in data_gen
-names(data_gen)[18] <- "Nloci2"
+names(data_gen)[18] <- "Nmarkers"
 head(data_gen)
 
 # data_geo's headers are okay
@@ -246,6 +246,9 @@ data_merge$WMU <- "Trask"
 # Add in a year column
 data_merge$Year <- 2015
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Dog"
+
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -260,31 +263,34 @@ data_merge$Year <- 2015
 # Year
 print(names(data_merge))
 
-# Adding additionall loci
 
 # Manual changes
 data_merge <- data_merge %>% 
   rename(
     "ODFW_ID" = "ODFW Sample #",
     "OSU_ID" = "OSU sample",
-    "Nloci" = "# of loci", 
     "DAN" = "Deer Assignment"
   )
+
+# Some samples across human and dog collected datasets are from the same deer
+# making a note
+assn_df_list$`2015 TrD and TrH matches`
+data_merge$Other_notes <- "Deer match across Trask Dog and Human; OSU ID TrD1495 = TrH1595 & TrD1660 = TrH1364" 
 
 # Retain
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,
     `SBTD05.1`, `SBTD05.2`, 
     `SBTD06.1`, `SBTD06.2`, 
     `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`
+    `T7.1`, `T7.2`, Other_notes
   )
 
 # Take a look

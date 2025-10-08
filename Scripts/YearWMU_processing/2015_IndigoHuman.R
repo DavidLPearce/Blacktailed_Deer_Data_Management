@@ -247,6 +247,9 @@ data_merge$WMU <- "Indigo"
 # Add in a year column
 data_merge$Year <- 2015
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Human"
+
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -268,7 +271,7 @@ data_merge <- data_merge %>%
   rename(
     "ODFW_ID" = "ODFW sample #",
     "OSU_ID" = "OSU ID",
-    "Nloci" = "# loci", 
+    "Nmarkers" = "# loci", 
     "DAN" = "Deer Assignment"
   )
 
@@ -281,9 +284,9 @@ data_merge <- data_merge %>% rename(T159s.1 = T159S.1,
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,

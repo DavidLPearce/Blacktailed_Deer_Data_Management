@@ -171,6 +171,9 @@ data_merge$WMU <- "SaddleMountain"
 # Add in a year column
 data_merge$Year <- 2021
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Dog"
+
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -189,7 +192,7 @@ data_merge <- data_merge %>% # Manual changes
   rename(
     "ODFW_ID" = "ODFW Sample #",
     "OSU_ID" = "OSU Label",
-    "Nloci" = "# loci typed (original 7 markers)", 
+    "Nmarkers" = "# loci typed (original 7 markers)", 
     "DAN" = "Deer Assignment Number"
   )
 print(names(data_merge)) # Take a look
@@ -197,9 +200,9 @@ print(names(data_merge)) # Take a look
 data_merge <- data_merge %>% # Retain
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`, 
     `C89.1`, `C89.2`, 
     `OdhE.1`, `OdhE.2`,
