@@ -7,6 +7,7 @@ library(dplyr)
 
 # Read in sample data
 cbtd_data <- readRDS(file = "./Data/Sample/Compiled_YearWMU.rds")
+nrow(cbtd_data)
 
 # Remove samples that have NA for Latitude and Longitude
 cbtd_data_coords <- cbtd_data %>% 
@@ -27,6 +28,7 @@ cbtd_data_coords <- cbtd_data_coords %>%
   filter(Longitude >= -124.5 & Longitude <= -116.5)
 
 # Check how many points remain
+nrow(cbtd_data)
 nrow(cbtd_data_coords)
 
 saveRDS(cbtd_data_coords, file = "./Data/Sample/Compiled_YearWMU_Coords.rds")
