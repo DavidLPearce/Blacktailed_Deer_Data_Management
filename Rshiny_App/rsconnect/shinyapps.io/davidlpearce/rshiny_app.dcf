@@ -1,0 +1,10 @@
+name: rshiny_app
+title: Rshiny_App
+username: davidlpearce
+account: davidlpearce
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15697750
+bundleId: 11008957
+url: https://davidlpearce.shinyapps.io/rshiny_app/
+version: 1
