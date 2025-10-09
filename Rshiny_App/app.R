@@ -28,14 +28,8 @@ library(leaflet)
 library(dplyr)
 library(sf)
 
-# Set working directory
+# Set working directory --- only for local run
 # setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_Management/R/Rshiny_App")
-
-# # Connect to online server
-# rsconnect::setAccountInfo(name='davidlpearce',
-#                           token='836F07366DE04EC094C0ECADAA61F884',
-#                           secret='Q6HJKssRCwjbHSuWC4eZ9oaR76V/Dh6QO3hHAFyS')
-# 
 
 
 # ------------------------------------------------------------------------------
@@ -45,11 +39,41 @@ library(sf)
 # ------------------------------------------------------------------------------
 
 # Read in sample data
-cbtd_data <- readRDS(file = "./Data/Sample/Compiled_YearWMU_Coords.rds")
+cbtd_data <- readRDS(file = "./Data/Sample/Compiled_YearWMU.rds")
 
 # Read in WMU polygons
 wmu_shp <- st_read("./Data/GIS/OregonWMUs/ODFW_wildlife_mgmt_units.shp")
-# Fix projection
+
+# ------------------------------------------------------------------------------
+#
+#                            Format Data
+#
+# ------------------------------------------------------------------------------
+
+# Remove samples that have NA for Latitude and Longitude
+cbtd_data_coords <- cbtd_data %>% 
+  filter(!is.na(Latitude) & !is.na(Longitude))
+
+
+# Inspect
+head(cbtd_data_coords)
+str(cbtd_data_coords)
+
+any(is.na(cbtd_data_coords$Latitude))
+any(is.na(cbtd_data_coords$Longitude))
+
+# Some samples are outside of Oregon due to incorrect Lat/Long
+# Filter to Oregon boundaries
+cbtd_data_coords <- cbtd_data_coords %>%
+  filter(Latitude >= 42 & Latitude <= 46) %>%
+  filter(Longitude >= -124.5 & Longitude <= -116.5)
+
+# Check how many points remain
+nrow(cbtd_data)
+nrow(cbtd_data_coords)
+
+
+# Fix shapefile projection
 wmu_shp <- st_transform(wmu_shp, crs = 4326) 
 
 # ------------------------------------------------------------------------------
@@ -96,7 +120,7 @@ server <- function(input, output, session) {
       
       # Sample points
       addCircleMarkers(
-        data = cbtd_data,
+        data = cbtd_data_coords,
         lng = ~Longitude,
         lat = ~Latitude,
         radius = 3,
@@ -125,7 +149,7 @@ shinyApp(ui = ui, server = server)
 # rsconnect::setAccountInfo(name='davidlpearce',
 #                           token='836F07366DE04EC094C0ECADAA61F884',
 #                           secret='Q6HJKssRCwjbHSuWC4eZ9oaR76V/Dh6QO3hHAFyS')
-
+# 
 # rsconnect::deployApp()
 # 
 # ----------------------------- End of Script -----------------------------
