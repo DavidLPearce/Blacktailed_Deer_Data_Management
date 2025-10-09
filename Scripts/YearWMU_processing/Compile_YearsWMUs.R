@@ -202,4 +202,7 @@ cbtd_data <- cbtd_data %>%
 saveRDS(cbtd_data, file = "./Data/2_For_Across_Year_Assignments/Compiled_YearWMU.rds")
 write.csv(cbtd_data, file = "./Data/2_For_Across_Year_Assignments/Compiled_YearWMU.csv")
 
+# For Rshiny app
+saveRDS(cbtd_data, file = "./Rshiny_App/Data/Sample/Compiled_YearWMU.rds")
+
 # ----------------------------- End of Script -----------------------------
