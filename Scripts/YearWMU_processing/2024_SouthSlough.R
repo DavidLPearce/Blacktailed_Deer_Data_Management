@@ -1,8 +1,8 @@
 # Author: David L. Pearce
 # Description:
 #       Data wrangling for Columbia black-tailed deer in South Slough in 
-#         the Sixes WMU in 2024
-#              Samples were collected by humans
+#         the Sixes WMU in 2024. Samples were collected by dogs.
+#              
 #              
 #              
 #                           
@@ -53,12 +53,12 @@ names(df_list) <- sheets
 # Take a look
 print(df_list)
 
-# Assigment file is separate
-assn_path <- "./Data/0_Raw/2012 Deer Matching.xlsx"
-assn_sheets <- excel_sheets(assn_path)
-assn_df_list <- lapply(assn_sheets, function(x) readxl::read_excel(assn_path, sheet = x))
-names(assn_df_list) <- assn_sheets
-print(assn_df_list)
+# # Assigment file is separate
+# assn_path <- "./Data/0_Raw/2012 Deer Matching.xlsx"
+# assn_sheets <- excel_sheets(assn_path)
+# assn_df_list <- lapply(assn_sheets, function(x) readxl::read_excel(assn_path, sheet = x))
+# names(assn_df_list) <- assn_sheets
+# print(assn_df_list)
 
 # ------------------------------------------------------------------------------
 #
@@ -71,12 +71,12 @@ print(assn_df_list)
 # -----------------------
 
 # Extract Genetic, and Assignment into individual df
-# data_geo <- as.data.frame(df_list$ # No location data
-data_gen <- as.data.frame(df_list$`2012 Alsea genos-ALL`)
-data_assn <- as.data.frame(assn_df_list$`2012 Alsea`)
+data_geo <- as.data.frame(df_list$`All South Slough sample Info`)
+data_gen <- as.data.frame(df_list$`2024 South Slough Genotypes`)
+data_assn <- as.data.frame(df_list$`South Slough Deer Assignment`)
 
 # Inspect each df
-# str(data_geo) 
+str(data_geo) 
 str(data_gen)
 str(data_assn)
 
@@ -88,141 +88,63 @@ head(data_assn)
 # Cleaning
 # -----------------------
 
-# # ---- Not a issue with this dataset ----
-# # Columns were not named correctly due to notes above each sheet, column names
-# # are actually row 1
-# colnames(data_gen) <- as.character(unlist(data_gen[1, ])) # row 1 as column name
-# data_gen <- data_gen[-1, ]# Drop the first row
-# head(data_gen)
 
-# No column name for 1 and 16
-names(data_gen)[1] <- "Sample Name"
-names(data_gen)[16] <- "Sex"
-
-# Extra spacing in loci names
-names(data_gen)
-
-# Remove ...Number pattern from column names
-names(data_gen) <- sub("\\.{3}\\d+$", "", names(data_gen))
-names(data_gen)
-
-# # Loci are already named a and b, removing for consistency
-# names(data_gen) <- sub("[ab]$", "", names(data_gen))
+# Columns were not named correctly due to notes above each sheet, column names
+# are actually row 1
+colnames(data_gen) <- as.character(unlist(data_gen[1, ])) # row 1 as column name
+data_gen <- data_gen[-1, ]# Drop the first row
+head(data_gen)
 
 # The genetic data has identical column names for each allele call. Adding a 
 # .1 and .2 to the allele to fix this
 names(data_gen) <- fix_alleles(names(data_gen))
 head(data_gen)
 
-# Remove sexing alleles
-data_gen <- data_gen %>% select(-SEX.1, -SEX.2)
-head(data_gen)
-
-# This year has different loci than subsequent years
-# Missing several loci that were found in all other years 
-data_gen$`C273.1` <- NA
-data_gen$`C273.2` <- NA 
-data_gen$`OdhE.1` <- NA
-data_gen$`OdhE.2` <- NA 
-data_gen$`T159s.1` <- NA
-data_gen$`T159s.2` <- NA
-
-
-# Adding a note
-data_gen$Marker_notes <- "Markers C89, SBTD05, SBTD06, T7 are from standardized panel, missing C273, OdhE, T159s. Other markers are SBTD04 and SBTD07."
-head(data_gen)
-
-# Since there is no geo data adding a not about that to genetic data frame
-data_gen$Geo_notes <- "No coords, but I think first two digits in ODFW ID is reference to a grid"
-
-
-# # ---- Not a issue with this dataset ----
-# # theres a empty column name in data_gen
-# names(data_gen)[18] <- "Nloci"
-# head(data_gen)
-
-# # ---- Not a issue with this dataset ----
 # data_geo's headers are okay
-# head(data_geo)
+head(data_geo)
 
-# # ---- Not a issue with this dataset ----
+ 
 # data_assn headers
-# colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
-# data_assn <- data_assn[-1, ]
-# head(data_assn)
+colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
+data_assn <- data_assn[-1, ]
+head(data_assn)
 
-# # ---- Not a issue with this dataset ----
-# # geo data's sample names have a period where data assignment and genetic do not
-# head(data_geo)
-# data_geo$`Sample Name` <- gsub("\\.", "", data_geo$`Sample Name`)
-# head(data_geo)
 
-# # # Coordinates are only for node or end of transect adding in node
-# # and a note
-# data_geo$Note <- "Coords are from node and not sample location"
+ 
+# Removing NAs from coords
+# First sandardizing how NA could have been entered
+# Then converting to numeric
+# Lastly removing NAs
+names(data_geo) # Check column naming
 
-# # # ---- Not a issue with this dataset ----
-# # Splitting coords into one column per coord (1 easting, 1 northing)
-# # assuming the one not named node is where the sample was collected
-# data_geo$`UTM (E, N)` <- gsub("\\.", ",", data_geo$`UTM (E, N)`) # replacing periods with comma
-# data_geo$Easting <- as.numeric(sub(",.*", "", data_geo$`UTM (E, N)`))
-# data_geo$Northing <- as.numeric(sub(".*, ", "", data_geo$`UTM (E, N)`))
-# head(data_geo)
-# 
-# # # ---- Not a issue with this dataset ----
-# # Removing NAs from coords
-# # First sandardizing how NA could have been entered
-# # Then converting to numeric
-# # Lastly removing NAs
-# names(data_geo) # Check column naming
-# 
-# data_geo <- data_geo %>%
-#   mutate(
-#     # To character and trim whitespace
-#     `Easting` = as.character(`Easting`) %>% trimws(),
-#     `Northing`            = as.character(`Northing`) %>% trimws()
-#   ) %>%
-#   mutate(
-#     # Standardize NA
-#     `Easting` = ifelse(`Easting` %in% c("", "NA", "na", "Na", "NULL"), NA, `Easting`),
-#     `Northing`            = ifelse(`Northing` %in% c("", "NA", "na", "Na", "NULL"), NA, `Northing`)
-#   ) %>%
-#   mutate(
-#     # To numeric
-#     `Easting` = as.numeric(`Easting`),
-#     `Northing`            = as.numeric(`Northing`)
-#   ) %>%
-#   # Remove NAs
-#   filter(!is.na(`Easting`), !is.na(`Northing`))
-# 
-# # If there is an error by as.numeric it is because there are other entries
-# # for NA or missing data that the standardize pipe did not catch
-# # Checking for any NAs
-# data_geo %>%
-#   summarise(
-#     Easting_NAs  = sum(is.na(`Easting`)),
-#     Northing_NAs = sum(is.na(`Northing`))
-#   )
-# 
-# # Now easting/northing to lat/long
-# coords_sf <- st_as_sf( #  convert to a sf object
-#   data_geo,
-#   coords = c("Easting", "Northing"),
-#   crs = 26910
-# ) 
-# coords_latlong <- st_transform(coords_sf, crs = 4326) # to lat/long
-# coords_latlong <- st_coordinates(coords_latlong)
-# colnames(coords_latlong) <- c("Longitude", "Latitude")
-# data_geo <- cbind(data_geo, coords_latlong)
-# head(data_geo) # View(data_geo)
+data_geo <- data_geo %>%
+  mutate(
+    # To character and trim whitespace
+    `Latitude` = as.character(`Latitude`) %>% trimws(),
+    `Longitude`            = as.character(`Longitude`) %>% trimws()
+  ) %>%
+  mutate(
+    # Standardize NA
+    `Latitude` = ifelse(`Latitude` %in% c("", "NA", "na", "Na", "NULL"), NA, `Latitude`),
+    `Longitude`            = ifelse(`Longitude` %in% c("", "NA", "na", "Na", "NULL"), NA, `Longitude`)
+  ) %>%
+  mutate(
+    # To numeric
+    `Latitude` = as.numeric(`Latitude`),
+    `Longitude`            = as.numeric(`Longitude`)
+  ) %>%
+  # Remove NAs
+  filter(!is.na(`Latitude`), !is.na(`Longitude`))
 
-# ----- IF needed for missing 0 in ID in a dataset -----
-# # Geo data is missing a 0 in OSU ID name
-# # prevents matching in Lat/Long
-# data_geo$`OSU label` <- paste0("ApD0", 
-#                                 sub("ApD", "", data_geo$`OSU label`))
+# If there is an error by as.numeric it is because there are other entries
+# for NA or missing data that the standardize pipe did not catch
+# Checking for any NAs
+data_geo %>%
+  summarise(
+    Latitude_NAs  = sum(is.na(`Latitude`)),
+    Longitude_NAs = sum(is.na(`Longitude`))
+  )
 
-# head(data_geo) # View(data_geo)
 
 # -----------------------
 # Merging Together
@@ -235,57 +157,30 @@ data_gen$Geo_notes <- "No coords, but I think first two digits in ODFW ID is ref
 # Should be zero
 names(data_gen)
 data_gen %>% 
-  count(`Sample Name`) %>% 
+  count(`OSU Label`) %>% 
   filter(n > 1)
 
-# # ---- Not a issue with this dataset ----
-# # Duplicates don't have a sample name - inspect
-# data_gen[is.na(data_gen$`Sample Name`), ]
-# 
-# # both are NA, removing to prevent matching issues
-# data_gen <- data_gen[!is.na(data_gen$`Sample Name`), ]
-
-# --- use this when needed, when above is >0
-# # Which rows have same OSU ID
-# data_gen %>% 
-#   filter(`OSU ID` == "ApD10800")%>% 
-#   print(width = Inf)
-
-# # Both rows of the same sample ID amplified for all loci
-# # this could just be a clerical error.
-# # Removing one of these rows.
-# data_gen <- data_gen %>%
-#   group_by(`OSU ID`) %>%
-#   filter(!(row_number() > 1 & `OSU ID` == "ApD10800")) %>%
-#   ungroup()
-
-# # Check for duplicates again
-# data_gen %>% 
-#   count(`OSU ID`) %>% 
-#   filter(n > 1)
-
-# # none :)
 
 # Merging Deer Assignment Number from data_assn to data_gen 
 names(data_gen)# Check column naming
 names(data_assn)
-# names(data_geo) 
+names(data_geo) 
 
 data_merge <- data_gen %>%
   left_join(
-    data_assn %>% select(`ODFW Sample Name`, `Deer Assignment`),
-    by = c("Sample Name" = "ODFW Sample Name")
+    data_assn %>% select(`OSU Label`, `Deer Assignment Number`),
+    by = c("OSU Label" = "OSU Label")
   )%>%
-  # # Merge Latitude and Longitude from data_geo
-  # left_join(
-  #   data_geo %>% select(`Sample Name`, Latitude, Longitude),
-  #   by = c("Sample Name" = "Sample Name")
-  # )%>%
+  # Merge Latitude and Longitude from data_geo
+  left_join(
+    data_geo %>% select(`OSU Sample Number`, Latitude, Longitude),
+    by = c("OSU Label" = "OSU Sample Number")
+  )%>%
   # Ensuring Deer Assignment Number is numeric
-  mutate(`Deer Assignment` = `Deer Assignment`
+  mutate(`Deer Assignment Number` = `Deer Assignment Number`
   ) %>%
   # Order by Deer Assignment Number
-  arrange(`Deer Assignment`
+  arrange(`Deer Assignment Number`
   )
 
 
@@ -303,6 +198,9 @@ data_merge$WMU <- "Sixes"
 # Add in a year column
 data_merge$Year <- 2024
 
+# Add in categorical of who collected the sample, Human or Dog
+data_merge$Collection_method <- "Dog"
+
 # Renaming column names for consistency across years. 
 # Naming Scheme and columns to retain 
 # ODFW_ID
@@ -315,44 +213,32 @@ data_merge$Year <- 2024
 # Longitude
 # WMU
 # Year
-print(names(data_merge))
+names(data_merge)
 
 # Manual changes
 data_merge <- data_merge %>% 
   rename(
-    "ODFW_ID" = "Sample Name",
-    "DAN" = "Deer Assignment",
-    "Nloci" = "# loci"
+    "ODFW_ID" = "South Slough Sample #",
+    "OSU_ID" = "OSU Label",
+    "DAN" = "Deer Assignment Number" ,
+    "Nmarkers" = "# loci typed (original 7 markers)"
   )
 
-
-# There was no OSU ID adding in a place holder column for later merging
-data_merge$OSU_ID <- NA
-data_merge$markers2012 <- ""
-data_merge$Latitude <- NA
-data_merge$Longitude<- NA
-
-# Any other notes?
-data_merge$Other_notes <- NA
 
 # Retain
 data_merge <- data_merge %>% 
   select(
     ODFW_ID, OSU_ID, 
-    Year, WMU, 
+    Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nloci,
+    Sex, DAN, Nmarkers,
     `C273.1`, `C273.2`,  
     `C89.1`, `C89.2`, #
     `OdhE.1`, `OdhE.2`, 
     `SBTD05.1`, `SBTD05.2`,#  
     `SBTD06.1`, `SBTD06.2`, # 
     `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`, markers2012,
-    SBTD04.1, SBTD04.2, 
-    SBTD07.1, SBTD07.2,
-    Marker_notes, Geo_notes,
-    Other_notes
+    `T7.1`, `T7.2`
   )
 
 # Take a look
