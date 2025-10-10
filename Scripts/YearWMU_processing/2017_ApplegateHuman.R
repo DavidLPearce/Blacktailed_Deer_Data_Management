@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Applegate WMU in 2017
+#       Data wrangling for Columbian black-tailed deer in the Applegate WMU in 2017
 #              Samples were collected by humans
 #              
 #              
@@ -264,6 +264,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2017ApplegateHuman.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2017ApplegateHuman.rds")
 
 # ----------------------------- End of Script -----------------------------

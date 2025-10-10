@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Santiam WMU in 2022
+#       Data wrangling for Columbian black-tailed deer in the Santiam WMU in 2022
 #              
 #              
 #              
@@ -202,6 +202,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2022Santiam.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2022Santiam.rds")
 
 # ----------------------------- End of Script -----------------------------

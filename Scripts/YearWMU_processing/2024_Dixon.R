@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Dixon WMU in 2024
+#       Data wrangling for Columbian black-tailed deer in the Dixon WMU in 2024
 #              
 #              
 #              
@@ -169,6 +169,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2024Dixon.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2024Dixon.rds")
 
 # ----------------------------- End of Script -----------------------------

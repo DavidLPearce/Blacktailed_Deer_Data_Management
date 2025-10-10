@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Rogue WMU in 2023
+#       Data wrangling for Columbian black-tailed deer in the Rogue WMU in 2023
 #              
 #              
 #              
@@ -172,6 +172,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2023Rogue.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2023Rogue.rds")
 
 # ----------------------------- End of Script -----------------------------

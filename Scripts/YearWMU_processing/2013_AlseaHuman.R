@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Alsea WMU in 2013
+#       Data wrangling for Columbian black-tailed deer in the Alsea WMU in 2013
 #              Samples were collected by humans
 #              
 #              
@@ -313,6 +313,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2013AlseaHuman.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2013AlseaHuman.rds")
 
 # ----------------------------- End of Script -----------------------------

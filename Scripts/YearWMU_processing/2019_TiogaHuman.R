@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Tioga WMU in 2019
+#       Data wrangling for Columbian black-tailed deer in the Tioga WMU in 2019
 #              Samples were collected by humans
 #              
 #              
@@ -215,6 +215,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2019TiogaHuman.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2019TiogaHuman.rds")
 
 # ----------------------------- End of Script -----------------------------

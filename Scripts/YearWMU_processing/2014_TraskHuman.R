@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Trask WMU in 2014
+#       Data wrangling for Columbian black-tailed deer in the Trask WMU in 2014
 #              Samples were collected by humans
 #              
 #              
@@ -302,6 +302,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2014TraskHuman.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2014TraskHuman.rds")
 
 # ----------------------------- End of Script -----------------------------

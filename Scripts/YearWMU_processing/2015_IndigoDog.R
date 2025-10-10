@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Indigo WMU in 2015
+#       Data wrangling for Columbian black-tailed deer in the Indigo WMU in 2015
 #              Samples were collected by humans and dogs
 #              
 #              
@@ -301,6 +301,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2015IndigoDog.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2015IndigoDog.rds")
 
 # ----------------------------- End of Script -----------------------------

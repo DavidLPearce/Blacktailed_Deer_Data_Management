@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed deer in the Saddle Mountain WMU in 2021
+#       Data wrangling for Columbian black-tailed deer in the Saddle Mountain WMU in 2021
 #              
 #              
 #              
@@ -219,6 +219,6 @@ View(data_merge)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2021SaddleMountain.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2021SaddleMountain.rds")
 
 # ----------------------------- End of Script -----------------------------

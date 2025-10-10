@@ -20,10 +20,19 @@ cbtd_data <- data.frame(
   Species = character(),  
   Sex = character(), 
   DAN = character(),
+  
+  # Field Info
   Collection_method = character(),
   Sample_Quality = character(),
   Pellet_Length_inches = numeric(), 
   Pellet_Width_inches = numeric(),
+  Weather = character(),
+  Working_Dog = character(),
+  Dog_Handler = character(),
+  Site_type =  character(),
+  
+  
+  # Lab info
   Processor = character(),
   Extractor = character(),
   Processing_Date = as.POSIXct(character(), tz = "UTC"),
@@ -33,6 +42,7 @@ cbtd_data <- data.frame(
   # Notes
   Collection_Notes = character(),
   OSU_Notes = character(),
+  Condition_Notes = character(), 
   Extraction_Notes = character(),
   Processing_Notes = character(),
   Marker_Notes = character(), 
