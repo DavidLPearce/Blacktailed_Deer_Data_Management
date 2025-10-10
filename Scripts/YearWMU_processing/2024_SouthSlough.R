@@ -106,14 +106,11 @@ head(data_gen)
 # data_geo's headers are okay
 head(data_geo)
 
- 
 # data_assn headers
 colnames(data_assn) <- as.character(unlist(data_assn[1, ])) # row 1 as column name
 data_assn <- data_assn[-1, ]
 head(data_assn)
 
-
- 
 # Removing NAs from coords
 # First sandardizing how NA could have been entered
 # Then converting to numeric
@@ -207,6 +204,74 @@ data_merge$Collection_method <- "Dog"
 # Species
 data_merge$Species <- "CBTD"
 
+# Naming Scheme and columns to retain 
+print(names(data_merge))
+
+# Manual changes
+# Format follows db
+data_merge <- data_merge %>% 
+  rename(
+    # Metadata
+    "ODFW_ID" = "South Slough Sample #.x", 
+    "OSU_ID" = "OSU Label",
+    # "Tray_ID" =  ,
+    # "Year" = , 
+    # "WMU" = ,
+    # "MgmtArea" = , 
+    # "Latitude" = , 
+    # "Longitude" = ,
+    # "Species" = ,  
+    # "Sex" = ,
+    "DAN" = "Deer Assignment Number",
+    # "Collection_method" = ,
+    "Sample_Quality" = "Quality",
+    # "Pellet_Length_inches" =  ,
+    # "Pellet_Width_inches" =  ,
+    # "Processor" = ,
+    # "Extractor" = ,
+    "Processing_Date" = "Processing Date",
+    "Extraction_Date" = "Extraction Date", 
+    "Extraction_Method" = "Extraction Method",
+    "Weather" = "Weather",
+    "Working_Dog"  = "Working Dog",
+    "Dog_Handler"  = "Dog Handler",
+    "Site_type" =  "Site type",
+    
+    
+    # Notes
+    "Collection_Notes" = "Dog Handler Collection Notes",
+    "OSU_Notes" = "OSU Notes",
+    "Condition_Notes" = "Condition Notes",
+    "Extraction_Notes" = "Extraction Notes",
+    "Processing_Notes" = "Processing Notes.x",
+    # "Marker_Notes" = , 
+    # "Location_Notes" = ,
+    # "Other_Notes" = ,
+    
+    # Markers
+    "Nmarkers" = "# loci typed (original 7 markers)"
+  )
+
+# Convert all marker columns and Nmarkers to numeric
+marker_cols <- c("Nmarkers", 
+                 "C273.1", "C273.2", "C89.1", "C89.2", 
+                 "OdhE.1", "OdhE.2", "SBTD05.1", "SBTD05.2",
+                 "SBTD06.1", "SBTD06.2", "T159s.1", "T159s.2",
+                 "T7.1", "T7.2", "SBTD04.1", "SBTD04.2",
+                 "SBTD07.1", "SBTD07.2", "B.1", "B.2",
+                 "C.1", "C.2", "H.1", "H.2", "N.1", "N.2",
+                 "R.1", "R.2", "V.1", "V.2")
+
+data_merge <- data_merge %>%
+  mutate(across(any_of(marker_cols), as.numeric))
+
+
+# Combine with data with database format
+cbtd_data <- dplyr::bind_rows(cbtd_data, data_merge %>% select(any_of(names(cbtd_data))))
+
+# Inspect
+print(names(cbtd_data)) 
+View(cbtd_data)
 
 
 # -----------------------

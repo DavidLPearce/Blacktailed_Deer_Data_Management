@@ -228,7 +228,7 @@ data_merge <- data_merge %>%
 
 
 # Combine with data with database format
-cbtd_data <- dplyr::bind_rows(cbtd_data, data_merge)
+cbtd_data <- dplyr::bind_rows(cbtd_data, data_merge %>% select(any_of(names(cbtd_data))))
 
 # Inspect
 print(names(cbtd_data)) 
