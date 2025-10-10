@@ -278,6 +278,6 @@ View(cbtd_data)
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2024SouthSlough.rds")
+saveRDS(cbtd_data, file = "./Data/1_YearWMU_processed/2024SouthSlough.rds")
 
 # ----------------------------- End of Script -----------------------------
