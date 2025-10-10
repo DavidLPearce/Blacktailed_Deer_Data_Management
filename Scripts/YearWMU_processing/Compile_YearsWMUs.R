@@ -191,7 +191,7 @@ cbtd_data <- cbtd_data %>%
 # Take a look
 View(cbtd_data)
 
-# Order by Year, WMU, DAN
+# Order by Year, WMU, DAN ---- TAKES A FEW MINS ----
 cbtd_data <- cbtd_data %>%
   arrange(desc(Year), WMU, DAN)
 
