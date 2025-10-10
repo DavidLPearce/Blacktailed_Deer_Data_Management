@@ -195,6 +195,9 @@ View(data_merge)
 # Add in a column for WMU for later on when all years/WMUs are compiled together
 data_merge$WMU <- "Sixes"
 
+# A column for additional location identifier
+data_merge$MgmtArea <- "South Slough"
+
 # Add in a year column
 data_merge$Year <- 2024
 
@@ -231,7 +234,7 @@ data_merge <- data_merge %>%
     ODFW_ID, OSU_ID, 
     Year, WMU, Collection_method,
     Latitude, Longitude,
-    Sex, DAN, Nmarkers,
+    Sex, DAN, Nmarkers, MgmtArea,
     `C273.1`, `C273.2`,  
     `C89.1`, `C89.2`, #
     `OdhE.1`, `OdhE.2`, 
