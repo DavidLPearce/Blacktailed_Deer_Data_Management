@@ -18,7 +18,8 @@ cbtd_data <- data.frame(
   Latitude = numeric(), 
   Longitude = numeric(),
   Species = character(),  
-  Sex = character(), 
+  Sex = character(),
+  Fawn = character(),
   DAN = character(),
   
   # Field Info
