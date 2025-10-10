@@ -1,6 +1,6 @@
 # Author: David L. Pearce
 # Description:
-#       Data wrangling for Columbia black-tailed and white-tailed deer 
+#       Data wrangling for Columbian black-tailed and white-tailed deer 
 #       in the North Bank WMU in 2024
 #              
 #              
@@ -12,6 +12,10 @@
 #
 # ------------------------------------------------------------------------------
 
+# Clear things
+rm(list = ls(all.names = TRUE)) # environment
+gc() # memory
+
 # Load packages
 library(tidyverse)
 library(readxl)
@@ -22,10 +26,12 @@ setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
 
+# Load Dataframe Format
+source("./Scripts/YearWMU_processing/DatabaseFormat.R")
+
 # Set seed, scientific notation, and workplace
 set.seed(123)
 options(scipen = 9999)
-setwd(".")
 
 # ------------------------------------------------------------------------------
 #
@@ -55,12 +61,6 @@ print(df_list)
 #
 # ------------------------------------------------------------------------------
 
-# ---------------------------------------
-# 
-# Black-tailed deer first
-# 
-# ---------------------------------------
-
 # -----------------------
 # Separating
 # -----------------------
@@ -69,11 +69,13 @@ print(df_list)
 data_gen <- df_list$`2024 All North Bank Genotypes`
 data_geo <- df_list$`2024 North Bank Dog Samples`
 BTdata_assn <- df_list$`2024 NoB BTD Assignment`
+WTdata_assn <- df_list$`2024 NoB CWTD Assignment`
 
 # Inspect each df
 # View(data_gen)
 # View(data_geo)
 # View(BTdata_assn)
+# View(WTdata_assn)
 
 # -----------------------
 # Cleaning
@@ -92,10 +94,15 @@ print(data_gen)
 
 # data_geo header is good
 
-# BTdata_assn is not - repeat
+# BTdata_assn is not 
 colnames(BTdata_assn) <- as.character(unlist(BTdata_assn[1, ])) # row 1 as column name
 BTdata_assn <- BTdata_assn[-1, ]
 print(BTdata_assn)
+
+# # WTdata_assn is not
+colnames(WTdata_assn) <- as.character(unlist(WTdata_assn[1, ])) # row 1 as column name
+WTdata_assn <- WTdata_assn[-1, ]
+print(WTdata_assn)
 
 # -----------------------
 # Merging Together
@@ -103,148 +110,128 @@ print(BTdata_assn)
 
 # Merging Deer Assignment Number from BTdata_assn to data_gen but nothing else 
 data_merge <- data_gen %>%
+  # Blacktail assignment
   left_join(
     BTdata_assn %>% select(`ODFW Sample #`, `Deer Assignment Number`),
     by =  "ODFW Sample #"
-  )
-
-# Take a look
-View(data_merge)
-
-# ---------------------------------------
-# 
-# White-tailed deer now
-# 
-# ---------------------------------------
-
-# Extract white-tail assignment
-WTdata_assn <- df_list$`2024 NoB CWTD Assignment`
-View(WTdata_assn)
-
-# Fix header
-colnames(WTdata_assn) <- as.character(unlist(WTdata_assn[1, ])) # row 1 as column name
-WTdata_assn <- WTdata_assn[-1, ]
-print(WTdata_assn)
-
-# Merging Deer Assignment Number from WTdata_assn to data_gen but nothing else 
-data_merge2 <- data_merge %>%
+  )%>%
+  # Whitetail assignment
   left_join(
     WTdata_assn %>% select(`ODFW Sample #`, `Deer Assignment Number`),
     by = "ODFW Sample #"
-  ) %>%
+  )%>%
+  # Coalesce to one column
   mutate(
-    Deer_Assignment_Number = coalesce(`Deer Assignment Number.x`, `Deer Assignment Number.y`)
+    DAN = coalesce(`Deer Assignment Number.x`, `Deer Assignment Number.y`)
   ) %>%
-  select(-`Deer Assignment Number.x`, -`Deer Assignment Number.y`)
-
-# Take a look
-View(data_merge2)
-
-# ---------------------------------------
-# 
-#  All Together
-# 
-# ---------------------------------------
-
-# -----------------------
-# Reorganizing and Renaming
-# -----------------------
-
-# Add in coordinates
-data_merge3 <- data_merge2 %>%
+  select(-`Deer Assignment Number.x`, -`Deer Assignment Number.y`
+  )%>%
+  # Geo data - all columns retained
   left_join(
-    data_geo %>% select(`ODFW Sample #`, Latitude, Longitude),
-    by =  "ODFW Sample #"
+    data_geo,
+    by = "ODFW Sample #"
   )
 
-# Take a look
-View(data_merge3)
 
+# Take a look
+View(data_merge)
 
 # -----------------------
 # Reorganizing and Renaming
 # -----------------------
 
 # Add in a column for WMU for later on when all years/WMUs are compiled together
-data_merge3$WMU <- "NorthBank"
+data_merge$WMU <- "Melrose"
+
+# A column for additional location identifier
+data_merge$MgmtArea <- "North Bank"
 
 # Add in a year column
-data_merge3$Year <- 2024
+data_merge$Year <- 2024
 
 # Add in categorical of who collected the sample, Human or Dog
-data_merge3$Collection_method <- "Dog"
+data_merge$Collection_method <- "Dog"
 
-# Renaming column names for consistency across years. 
-names(data_merge3) <- gsub(" ", "_", names(data_merge3)) # spaces to underscores
+# Fix species names
+data_merge$Species
+data_merge <- data_merge %>%
+  mutate(Species = case_when(
+    Species == "BTD" ~ "CBTD",
+    Species == "CWTD" ~ "CWTD",
+    is.na(Species) ~ "Unknown",
+    TRUE ~ Species
+  ))
+data_merge$Species # Check
+
+
 
 # Naming Scheme and columns to retain 
-# ODFW_ID
-# OSU_ID
-# All markers
-# Nloci
-# Sex
-# DAN
-# Latitude
-# Longitude
-# WMU
-# Year
 print(names(data_merge))
 
-data_merge3 <- data_merge3 %>% # Manual changes
+# Manual changes
+# Format follows db
+data_merge <- data_merge %>% 
   rename(
-    "ODFW_ID" = "ODFW_Sample_#",
-    "OSU_ID" = "OSU_Label", 
-    "Nmarkers" = "#_loci_typed_(original_7_markers)", 
-    "DAN" = "Deer_Assignment_Number"
+    # Metadata
+    "ODFW_ID" = "ODFW Sample #", 
+    "OSU_ID" = "OSU Label",
+    "Tray_ID" = "Tray #",
+    # "Year" = , 
+    # "WMU" = ,
+    # "MgmtArea" = , 
+    # "Latitude" = , 
+    # "Longitude" = ,
+    # "Species" = ,  
+    # "Sex" = ,
+    # "DAN" = ,
+    # "Collection_method" = ,
+    "Sample_Quality" = "Quality (3, 2, 1)",
+    "Pellet_Length_inches" = "Pellet Length (inches)",
+    "Pellet_Width_inches" = "Pellet Width (inches)",
+    # "Processor" = ,
+    # "Extractor" = ,
+    "Processing_Date" = "Processing Date",
+    "Extraction_Date" = "Extraction Date", 
+    "Extraction_Method" = "Extraction Method",
+    
+    # Notes
+    # "Collection_Notes" = ,
+    "OSU_Notes" = "OSU Notes",
+    "Extraction_Notes" = "Extraction Notes",
+    "Processing_Notes" = "Processing Notes",
+    # "Marker_Notes" = , 
+    # "Location_Notes" = ,
+    # "Other_Notes" = ,
+    
+    # Markers
+    "Nmarkers" = "# loci typed (original 7 markers)"
   )
-print(names(data_merge3)) # Take a look
 
-data_merge3 <- data_merge3 %>% # Retain
-  select(
-    ODFW_ID, OSU_ID, 
-    Year, WMU, Collection_method,
-    Latitude, Longitude,
-    Sex, DAN, Nmarkers, Species,
-    `C273.1`, `C273.2`, 
-    `C89.1`, `C89.2`, 
-    `OdhE.1`, `OdhE.2`,
-    `SBTD05.1`, `SBTD05.2`, 
-    `SBTD06.1`, `SBTD06.2`, 
-    `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`,    
-  )
-print(names(data_merge3)) # Take a look
-View(data_merge3)
+# Convert all marker columns and Nmarkers to numeric
+marker_cols <- c("Nmarkers", 
+                 "C273.1", "C273.2", "C89.1", "C89.2", 
+                 "OdhE.1", "OdhE.2", "SBTD05.1", "SBTD05.2",
+                 "SBTD06.1", "SBTD06.2", "T159s.1", "T159s.2",
+                 "T7.1", "T7.2", "SBTD04.1", "SBTD04.2",
+                 "SBTD07.1", "SBTD07.2", "B.1", "B.2",
+                 "C.1", "C.2", "H.1", "H.2", "N.1", "N.2",
+                 "R.1", "R.2", "V.1", "V.2")
 
-# ---------------------------------------
-# 
-# Subset Data to Species
-# 
-# ---------------------------------------
+data_merge <- data_merge %>%
+  mutate(across(any_of(marker_cols), as.numeric))
 
-btd_data <- data_merge3[which(data_merge3$Species == "BTD"),]
-wtd_data <- data_merge3[which(data_merge3$Species == "CWTD"),]
 
-# Remove species column
-btd_data <- btd_data %>%
-  select(-Species)
+# Combine with data with database format
+cbtd_data <- dplyr::bind_rows(cbtd_data, data_merge)
 
-wtd_data <- wtd_data %>%
-  select(-Species)
-
-# Check
-print(names(btd_data))
-print(names(wtd_data))
+# Inspect
+print(names(cbtd_data)) 
+View(cbtd_data)
 
 # -----------------------
 # Exporting
 # -----------------------
 
-# Black-tailed deer
-saveRDS(btd_data, file = "./Data/1_YearWMU_processed/rds/2024NorthBank.rds")
-
-# White-tailed deer
-write.csv(wtd_data, file = "./Data/1_YearWMU_processed/WTD/2024NorthBank_WTD.csv")
-
+saveRDS(cbtd_data, file = "./Data/1_YearWMU_processed/2024NorthBank.rds")
 
 # ----------------------------- End of Script -----------------------------
