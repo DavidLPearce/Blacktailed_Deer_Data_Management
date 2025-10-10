@@ -28,6 +28,9 @@ setwd("E:/Projects/Current_Projects/Blacktailed_Deer_Genetics/Msat_Genetic_Data_
 # Load Functions
 source("./Scripts/Functions/AlleleID_Suffix_Function.R")
 
+# Load Dataframe Format
+source("./Scripts/YearWMU_processing/DatabaseFormat.R")
+
 # Set seed, scientific notation
 set.seed(123)
 options(scipen = 9999)
@@ -168,20 +171,17 @@ names(data_geo)
 
 data_merge <- data_gen %>%
   left_join(
+    # Deer Assignment
     data_assn %>% select(`OSU Label`, `Deer Assignment Number`),
     by = c("OSU Label" = "OSU Label")
-  )%>%
-  # Merge Latitude and Longitude from data_geo
-  left_join(
-    data_geo %>% select(`OSU Sample Number`, Latitude, Longitude),
-    by = c("OSU Label" = "OSU Sample Number")
-  )%>%
-  # Ensuring Deer Assignment Number is numeric
-  mutate(`Deer Assignment Number` = `Deer Assignment Number`
   ) %>%
-  # Order by Deer Assignment Number
-  arrange(`Deer Assignment Number`
+  # Merge Latitude and Longitude from data_geo
+  # Geo data - all columns retained
+  left_join(
+    data_geo,
+    by = c("OSU Label" = "OSU Sample Number")
   )
+
 
 
 # Take a look
@@ -204,54 +204,15 @@ data_merge$Year <- 2024
 # Add in categorical of who collected the sample, Human or Dog
 data_merge$Collection_method <- "Dog"
 
-# Renaming column names for consistency across years. 
-# Naming Scheme and columns to retain 
-# ODFW_ID
-# OSU_ID
-# All markers
-# Nloci
-# Sex
-# DAN
-# Latitude
-# Longitude
-# WMU
-# Year
-names(data_merge)
-
-# Manual changes
-data_merge <- data_merge %>% 
-  rename(
-    "ODFW_ID" = "South Slough Sample #",
-    "OSU_ID" = "OSU Label",
-    "DAN" = "Deer Assignment Number" ,
-    "Nmarkers" = "# loci typed (original 7 markers)"
-  )
+# Species
+data_merge$Species <- "CBTD"
 
 
-# Retain
-data_merge <- data_merge %>% 
-  select(
-    ODFW_ID, OSU_ID, 
-    Year, WMU, Collection_method,
-    Latitude, Longitude,
-    Sex, DAN, Nmarkers, MgmtArea,
-    `C273.1`, `C273.2`,  
-    `C89.1`, `C89.2`, #
-    `OdhE.1`, `OdhE.2`, 
-    `SBTD05.1`, `SBTD05.2`,#  
-    `SBTD06.1`, `SBTD06.2`, # 
-    `T159s.1`, `T159s.2`,
-    `T7.1`, `T7.2`
-  )
-
-# Take a look
-print(names(data_merge)) 
-View(data_merge)
 
 # -----------------------
 # Exporting
 # -----------------------
 
-saveRDS(data_merge, file = "./Data/1_YearWMU_processed/rds/2024SouthSlough.rds")
+saveRDS(data_merge, file = "./Data/1_YearWMU_processed/2024SouthSlough.rds")
 
 # ----------------------------- End of Script -----------------------------
